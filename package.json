@@ -2,10 +2,18 @@
 	"name": "@agility/nextjs",
 	"version": "0.1.0",
 	"description": "Agility CMS support for NextJS",
-	"main": "index.js",
+	"main": "./index.js",
+	"files": [
+		"./node.js"
+	],
+	"bin": {
+		"agility-next": "bin/agility.js"
+	},
 	"scripts": {
-		"build": "tsc",
-		"clean": "del-cli dist/*",
+		"clean": "rm -rf ./dist",
+		"move": "mv ./dist/* ./",
+		"build": "yarn clean && tsc && yarn move && yarn clean",
+		"prepare": "yarn build",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [
@@ -26,10 +34,12 @@
 		"next": "^10.0.9"
 	},
 	"devDependencies": {
-		"@agility/content-fetch": "^1.1.1",
+		"@agility/content-sync": "^0.1.24",
+		"@types/react-dom": "^17.0.2",
+		"fs-extra": "^9.1.0",
 		"next": "^10.0.9",
 		"react": "^17.0.1",
-		"@agility/content-sync": "^0.1.24",
+		"ts-loader": "^8.0.18",
 		"typescript": "^4.2.3"
 	}
 }

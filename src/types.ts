@@ -17,12 +17,12 @@ export interface AgilityGetStaticPropsContext<Q extends ParsedUrlQuery = ParsedU
 
 	/**
 	 * A dictionary of the global components (such as header/footer) that have a getCustomInitialProps method.
-	 * Adding a component to this will add results of that method call to the globalData dictionary available in the page props.
+	 * Adding a component to this will add results of that method call to the globalData dictionary available in the page props
 	 *
-	 * @type {([FC | ClassicComponent])}
+	 * @type {{ [ name: string ] : ComponentWithInit  }}
 	 * @memberof AgilityGetStaticPropsContext
 	 */
-	globalComponents?: { [ name: string ] : FC | ClassicComponent  }
+	globalComponents?: { [ name: string ] : ComponentWithInit  }
 
 	/**
 	 * A function that will return the component for a given module.
@@ -33,7 +33,7 @@ export interface AgilityGetStaticPropsContext<Q extends ParsedUrlQuery = ParsedU
 	 * @returns {(FC | ClassicComponent)}
 	 * @memberof AgilityGetStaticPropsContext
 	 */
-	getModule(moduleName:string): FC | ClassicComponent
+	getModule(moduleName:string): ModuleWithInit
 
 }
 
@@ -47,11 +47,21 @@ export interface AgilityPageProps  {
 	channelName?:string|null,
 	isPreview?:boolean,
 	isDevelopmentMode?:boolean,
-	notFound?:boolean
+	notFound?:boolean,
+	getModule?(moduleName:string): ModuleWithInit
 }
 
 export interface CustomInitPropsArg {
 	item: any
+	page:any
+	agility: any
+	languageCode: any
+	channelName: any
+	pageInSitemap: any
+	dynamicPageItem?: any
+}
+
+export interface GlobalCustomInitPropsArg {
 	page:any
 	agility: any
 	languageCode: any
@@ -84,7 +94,6 @@ export interface CustomInitProps<T, C>
 	customData: C
 }
 
-
 export interface Module<TContent> extends FC<ModuleProps<TContent>> {
 
 }
@@ -93,8 +102,41 @@ export interface ModuleWithDynamic<TContent, TDynamicPageItem> extends FC<Dynami
 
 }
 
-export interface ModuleWithInit<TProps, TInit> extends FC<CustomInitProps<TProps, TInit>> {
+/**
+ * A component used to render an Agility module that has an additional data access method called getCustomInitialProps
+ *
+ * @export
+ * @interface ModuleWithInit
+ * @extends {FC<CustomInitProps<TProps, TInit>>}
+ * @template TProps The type of props object that the component expects
+ * @template TInit The type of object that will be returned by the getCustomInitialProps method
+ */
+export interface ModuleWithInit<TProps = {}, TInit = {}> extends FC<CustomInitProps<TProps, TInit>> {
 	getCustomInitialProps?(props:CustomInitPropsArg): Promise<TInit>
+}
+
+
+/**
+ * A component with an additional data access method called getCustomInitialProps
+ *
+ * @export
+ * @interface ComponentWithInit
+ * @extends {FC<TProps>}
+ * @template TProps The type of props object that the component expects
+ * @template TInit The type of object that will be returned by the getCustomInitialProps method
+ */
+export interface ComponentWithInit<TInit = {}> extends FC<AgilityPageProps> {
+	getCustomInitialProps?(props:GlobalCustomInitPropsArg): Promise<TInit>
+}
+
+export interface ContentZoneProps {
+	name:string
+	page:any
+	pageInSitemap:any
+	dynamicPageItem?:any
+	languageCode:string
+	channelName:string
+	getModule(moduleName:string): ModuleWithInit
 }
 
 export interface Properties {

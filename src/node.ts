@@ -1,11 +1,9 @@
-const fs = require("fs-extra")
-import crypto from 'crypto'
 import { asyncForEach } from "./utils"
 
 import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types"
 
 //Agility API stuff
-import { agilityConfig, getSyncClient, prepIncrementalMode } from './agility.config'
+import { agilityConfig, getSyncClient, prepIncrementalMode } from './config'
 import { AgilityPageProps } from "./types"
 
 const securityKey = agilityConfig.securityKey
@@ -34,6 +32,8 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 			})
 		}
 	}
+
+	const fs = require("fs-extra")
 
 	//determine if we've already done a full build yet
 	const buildFilePath = `${process.cwd()}/.next/cache/agility/build.log`
@@ -137,6 +137,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 
 				try {
 					const moduleData = await moduleComponent.getCustomInitialProps({
+						page,
 						item: moduleItem.item,
 						agility: agilitySyncClient.store,
 						languageCode,
@@ -175,8 +176,9 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 		for (let i = 0; i<keys.length; i++ ) {
 			const key = keys[i]
 			try {
-				const fnc = globalComponents[key]
-				const retData = await fnc({ agility: agilitySyncClient.store, languageCode, channelName });
+				const fnc = globalComponents[key].getCustomInitialProps
+
+				const retData = await fnc({ agility: agilitySyncClient.store, languageCode, channelName, page, pageInSitemap, dynamicPageItem  });
 
 				globalData[key] = retData
 			} catch (error) {
@@ -199,13 +201,15 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 	}
 }
 
-const getAgilityPaths = async ({preview, locales, defaultLocale}) => {
+const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string[]> => {
 
 	//determine if we are in preview mode
 	const isPreview = isDevelopmentMode || preview;
 
 	if (! defaultLocale) defaultLocale = agilityConfig.locales[0]
 	if (! locales) locales = agilityConfig.locales
+
+	const fs = require("fs-extra")
 
 	//determine if we've already done a full build yet
 	const buildFilePath = `${process.cwd()}/.next/cache/agility/build.log`
@@ -223,7 +227,7 @@ const getAgilityPaths = async ({preview, locales, defaultLocale}) => {
 	}
 
 
-	let paths = []
+	let paths:string[] = []
 
 	for (let i=0; i<locales.length; i++) {
 		const languageCode = locales[i].toLowerCase()
@@ -307,6 +311,7 @@ const generatePreviewKey =() => {
 	const strBuffer = Buffer.from(data);
 
 	//encode it!
+	const crypto = require('crypto')
 	const previewKey = crypto.createHash('sha512').update(strBuffer).digest('base64');
 	return previewKey;
 }
@@ -321,6 +326,8 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 	const languageCode = agilityConfig.locales[0]
 
 	//TODO: check to see if this slug starts with a language code, and IF SO we need to use that languageCode...
+
+	const fs = require("fs-extra")
 
 	//determine if we've already done a full build yet
 	const buildFilePath = `${process.cwd()}/.next/cache/agility/build.log`;

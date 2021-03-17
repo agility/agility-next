@@ -1,18 +1,17 @@
 
-import fs from "fs"
+const fs = require('fs')
 
 require("dotenv").config({
 	path: `.env.local`,
 })
 
-const { getSyncClient } = require('./agility.config')
-
+const { getSyncClient } = require('./config')
 
 const runSync = async () => {
 	setBuildLog(false)
 
 	const agilitySyncClient = getSyncClient({ isPreview: true, isDevelopmentMode: true })
-	if (! agilitySyncClient) {
+	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
 		return;
 	}
@@ -45,7 +44,7 @@ const preBuild = async () => {
 
 	//sync preview mode
 	let agilitySyncClient = getSyncClient({ isPreview: true, isDevelopmentMode: false })
-	if (! agilitySyncClient) {
+	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
 		return;
 	}
@@ -54,7 +53,7 @@ const preBuild = async () => {
 
 	//sync production mode
 	agilitySyncClient = getSyncClient({ isPreview: false, isDevelopmentMode: false })
-	if (! agilitySyncClient) {
+	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
 		return;
 	}
@@ -64,17 +63,17 @@ const preBuild = async () => {
 
 }
 
-const postBuild = async() => {
+const postBuild = async () => {
 	//mark the build log as BUILT
 	setBuildLog(true)
 }
 
-const clearSync = async () => {
+const cleanSync = async () => {
 
 	setBuildLog(false)
 
 	const agilitySyncClient = getSyncClient({ isPreview: true, isDevelopmentMode: true })
-	if (! agilitySyncClient) {
+	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
 		return;
 	}
@@ -83,25 +82,28 @@ const clearSync = async () => {
 }
 
 
-if (process.argv[2]) {
-	if (process.argv[2] === "clear") {
-		//clear everything
-		clearSync();
-	} else if (process.argv[2] === "sync") {
-		//run the sync
-		runSync()
+export const cli = (argv:string[]) => {
 
-	} else if (process.argv[2] === "prebuild") {
-		//pre build actions
-		preBuild()
+	let arg = "sync"
+	if (argv.length >= 3) arg = argv[2].toLowerCase()
 
-	} else if (process.argv[2] === "postbuild") {
-		//post build actions
-		postBuild()
-	}
-}
+	switch (arg) {
+		case "clean":
+			//clean everything
+			cleanSync();
+			break;
+		case "sync":
+			//run the sync
+			runSync()
+			break;
+		case "prebuild":
+			//pre build actions
+			preBuild()
+			break;
 
-module.exports = {
-	clearSync,
-	runSync
+		case "postbuild":
+			//post build actions
+			postBuild()
+			break;
+		}
 }

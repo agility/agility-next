@@ -2,9 +2,6 @@
 import agilityContentSync from "@agility/content-sync"
 import agilityFileSystem from "@agility/content-sync/src/store-interface-filesystem"
 
-import path from 'path'
-import fs from 'fs-extra'
-
 export const agilityConfig = {
 	guid: process.env.AGILITY_GUID, //Set your guid here
 	fetchAPIKey: process.env.AGILITY_API_FETCH_KEY, //Set your fetch apikey here
@@ -35,8 +32,6 @@ export const getSyncClient = ({ isPreview, isDevelopmentMode, isIncremental }) =
 		return null;
 	}
 
-
-
 	return agilityContentSync.getSyncClient({
 		guid: agilityConfig.guid,
 		apiKey,
@@ -58,6 +53,9 @@ export const prepIncrementalMode = async () => {
 	const rootPath = process.cwd()
 	let cachePath = `${rootPath}/.next/cache/agility/`;
 	const tempPath = `/tmp/agilitycache/`;
+
+	const path = require('path')
+	const fs = require('fs-extra')
 
 	const buildFilePath = path.join(tempPath, "build.log")
 

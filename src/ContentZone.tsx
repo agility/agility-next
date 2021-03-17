@@ -1,8 +1,10 @@
-import React, { Component } from 'react';
+import React, { FC } from 'react';
+import { ContentZoneProps } from './types';
 
- function ContentZone({ name, page, dynamicPageItem, languageCode, channelName, getModule }) {
-	function RenderModules() {
 
+export const ContentZone:FC<ContentZoneProps> = ({ name, page, pageInSitemap, dynamicPageItem, languageCode, channelName, getModule }) => {
+
+	const RenderModules = () => {
 		if (!page) return null
 
 		let modules = page.zones[name];
@@ -13,6 +15,7 @@ import React, { Component } from 'react';
 
 			let props = {
 				 page,
+				 pageInSitemap,
 				 dynamicPageItem,
 				 module: m.item,
 				 languageCode,
@@ -23,7 +26,7 @@ import React, { Component } from 'react';
 			if (AgilityModule) {
 				return <AgilityModule  key={m.item.contentID} { ... props} />
 			} else {
-				console.error(`React Component for ${m.moduleName} was not found in the Agility Modules list.`)
+				throw new Error(`React Component for ${m.moduleName} was not found in the Agility Modules list.`)
 			}
 
 		})
@@ -33,10 +36,6 @@ import React, { Component } from 'react';
 
 
 	return (
-		<div>
-			<RenderModules />
-		</div>
+		<RenderModules />
 	)
 }
-
-export default ContentZone
