@@ -2,6 +2,14 @@
 	"name": "@agility/nextjs",
 	"version": "0.1.0",
 	"description": "Agility CMS support for NextJS",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/agility/agility-next.git"
+	},
+	"bugs": {
+		"url": "https://github.com/agility/agility-next/issues"
+	},
+	"homepage": "https://github.com/agility/agility-next#readme",
 	"main": "./index.js",
 	"files": [
 		"./node.js"
