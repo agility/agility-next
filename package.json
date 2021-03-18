@@ -15,9 +15,8 @@
 		"agility-next": "bin/agility.js"
 	},
 	"scripts": {
-		"clean": "rm -rf ./dist",
-		"move": "mv ./dist/* ./",
-		"build": "yarn clean && tsc && yarn move && yarn clean",
+		"clean": "git clean -Xf",
+		"build": "tsc && mv ./dist/* ./ && rm -rf ./dist",
 		"prepare": "yarn build",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
