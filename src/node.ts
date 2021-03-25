@@ -36,7 +36,8 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 	const fs = require("fs-extra")
 
 	//determine if we've already done a full build yet
-	const buildFilePath = `${process.cwd()}/.next/cache/agility/build.log`
+
+	const buildFilePath = `${process.cwd()}/${agilityConfig.rootCachePath}/build.log`
 	const isBuildComplete = fs.existsSync(buildFilePath)
 
 	//determine if we are in preview mode
@@ -212,7 +213,7 @@ const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string
 	const fs = require("fs-extra")
 
 	//determine if we've already done a full build yet
-	const buildFilePath = `${process.cwd()}/.next/cache/agility/build.log`
+	const buildFilePath = `${process.cwd()}/${agilityConfig.rootCachePath}/build.log`
 	const isBuildComplete = fs.existsSync(buildFilePath)
 
 	const agilitySyncClient = getSyncClient({
@@ -330,7 +331,7 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 	const fs = require("fs-extra")
 
 	//determine if we've already done a full build yet
-	const buildFilePath = `${process.cwd()}/.next/cache/agility/build.log`;
+	const buildFilePath = `${process.cwd()}/${agilityConfig.rootCachePath}/build.log`;
 	const isBuildComplete = fs.existsSync(buildFilePath);
 
 	const agilitySyncClient = getSyncClient({

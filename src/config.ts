@@ -9,14 +9,15 @@ export const agilityConfig = {
 	locales: (process.env.AGILITY_LOCALES || "en-us").split(","), //the language for your website in Agility CMS
 	channelName: process.env.AGILITY_SITEMAP || "website", //the name of your channel in Agility CMS
 	securityKey: process.env.AGILITY_SECURITY_KEY, //the website security key used to validate and generate preview keys
+	rootCachePath: process.env.AGILITY_CACHEPATH || ".next/cache/agility"
 };
 
 export const getSyncClient = ({ isPreview, isDevelopmentMode, isIncremental }) => {
 
 	const rootPath = process.cwd()
-	const rootCachePath = process.env.AGILITY_CACHEPATH || ".next/cache/agility"
 
-	let cachePath = `${rootPath}/${rootCachePath}/${agilityConfig.guid}/${isPreview ? "preview" : "live" }`;
+
+	let cachePath = `${rootPath}/${agilityConfig.rootCachePath}/${agilityConfig.guid}/${isPreview ? "preview" : "live" }`;
 
 	//if we are in "incremental" mode, we need to use the tmp folder...
 	if (isIncremental) {
@@ -52,7 +53,8 @@ export const getSyncClient = ({ isPreview, isDevelopmentMode, isIncremental }) =
 export const prepIncrementalMode = async () => {
 
 	const rootPath = process.cwd()
-	let cachePath = `${rootPath}/.next/cache/agility/`;
+
+	let cachePath = `${rootPath}/${agilityConfig.rootCachePath}/`;
 	const tempPath = `/tmp/agilitycache/`;
 
 	const path = require('path')

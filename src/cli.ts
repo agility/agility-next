@@ -5,7 +5,7 @@ require("dotenv").config({
 	path: `.env.local`,
 })
 
-const { getSyncClient } = require('./config')
+const { getSyncClient, agilityConfig  } = require('./config')
 
 const runSync = async () => {
 	setBuildLog(false)
@@ -22,7 +22,8 @@ const runSync = async () => {
 const setBuildLog = (builtYN) => {
 	//clear out a file saying WE HAVE SYNC'D
 	const rootPath = process.cwd()
-	const filePath = `${rootPath}/.next/cache/agility/build.log`
+
+	const filePath = `${rootPath}/${agilityConfig.rootCachePath}/build.log`
 	if (fs.existsSync(filePath)) {
 		fs.unlinkSync(filePath);
 	}

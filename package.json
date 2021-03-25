@@ -1,6 +1,6 @@
 {
 	"name": "@agility/nextjs",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"description": "Agility CMS support for NextJS",
 	"repository": {
 		"type": "git",
