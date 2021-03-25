@@ -14,8 +14,9 @@ export const agilityConfig = {
 export const getSyncClient = ({ isPreview, isDevelopmentMode, isIncremental }) => {
 
 	const rootPath = process.cwd()
+	const rootCachePath = process.env.AGILITY_CACHEPATH || ".next/cache/agility"
 
-	let cachePath = `${rootPath}/.next/cache/agility/${agilityConfig.guid}/${isPreview ? "preview" : "live" }`;
+	let cachePath = `${rootPath}/${rootCachePath}/${agilityConfig.guid}/${isPreview ? "preview" : "live" }`;
 
 	//if we are in "incremental" mode, we need to use the tmp folder...
 	if (isIncremental) {
