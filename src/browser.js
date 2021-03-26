@@ -1,11 +1,8 @@
-const getParameterByName = (name, url) => {
-	if (!url) url = window.location.href;
-	name = name.replace(/[\[\]]/g, '\\$&');
-	var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-		results = regex.exec(url);
-	if (!results) return null;
-	if (!results[2]) return '';
-	return decodeURIComponent(results[2].replace(/\+/g, ' '));
+const getParameterByName = (name) => {
+	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
 const handlePreview = () => {
@@ -27,14 +24,19 @@ const handlePreview = () => {
 
 	let previewAPIUrl= `${previewAPIRoute}?slug=${window.location.pathname}&agilitypreviewkey=${agilityPreviewKey}`;
 
-	const dynamicPageContentID = getParameterByName('ContentID') ?? getParameterByName('contentID');
+	const dynamicPageContentID = parseInt( getParameterByName('ContentID') ?? getParameterByName('contentID'))
 
 	if(dynamicPageContentID > 0) {
 		previewAPIUrl += `&ContentID=${dynamicPageContentID}`;
 	}
 
-	//do the redirect
-	window.location.href = previewAPIUrl;
+	console.log("Activating preview", previewAPIUrl)
+
+	setTimeout(function() {
+		//do the redirect
+		window.location.href = previewAPIUrl;
+	}, 2500)
+
 
 	return true
 
