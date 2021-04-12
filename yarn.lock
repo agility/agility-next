@@ -10,14 +10,14 @@
     axios "^0.21.1"
     axios-cache-adapter "^2.4.1"
 
-"@agility/content-sync@^0.1.24":
-  version "0.1.24"
-  resolved "https://registry.yarnpkg.com/@agility/content-sync/-/content-sync-0.1.24.tgz#34a9553fd67b98a69dcd6c045bb7f72a279b19fe"
-  integrity sha512-crp1hXXr0n7D4adsjI1A86nrHmWigNyriWjhgCAlW5f270MObdhZa3gUUiplo2di4Tz68T94kvvNhHra+A9enw==
+"@agility/content-sync@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@agility/content-sync/-/content-sync-1.0.1.tgz#caf8d15403da7339c23b8884a27dfeec56acb627"
+  integrity sha512-hJl2MKL1cc22u+BITTsIs+TKYBGH6JiO1t5fBC1BGzckJjrPTM+1sBGftJUGcGiqO4lDcVzhBgwqjjQv+rQyUA==
   dependencies:
     "@agility/content-fetch" "^1.0.0"
     dotenv "^8.2.0"
-    proper-lockfile "^4.1.1"
+    proper-lockfile "^4.1.2"
 
 "@babel/code-frame@7.12.11":
   version "7.12.11"
@@ -1297,7 +1297,7 @@ prop-types@15.7.2:
     object-assign "^4.1.1"
     react-is "^16.8.1"
 
-proper-lockfile@^4.1.1:
+proper-lockfile@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/proper-lockfile/-/proper-lockfile-4.1.2.tgz#c8b9de2af6b2f1601067f98e01ac66baa223141f"
   integrity sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==
