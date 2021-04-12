@@ -65,6 +65,7 @@ export const prepIncrementalMode = async () => {
 	//check for the build file in here...
 	if (!fs.existsSync(buildFilePath)) {
 		//copy everything across from cachePath
+console.log(`Prepping incremental/preview mode - copying ${cachePath} to ${tempPath}`)
 		await fs.copy(cachePath, tempPath)
 	}
 }

@@ -12,7 +12,7 @@ const channelName = agilityConfig.channelName
 const isDevelopmentMode = process.env.NODE_ENV === "development"
 
 
-const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, getModule, globalComponents }:AgilityGetStaticPropsContext):Promise<AgilityPageProps> => {
+const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, getModule, globalComponents }: AgilityGetStaticPropsContext): Promise<AgilityPageProps> => {
 
 	//use locale or defaultLocale if it's provided for languageCode
 	let languageCode = (locale || defaultLocale || agilityConfig.locales[0]).toLowerCase()
@@ -26,7 +26,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 			path = params.slug as string
 		} else {
 			//slug is a string array (more likely)
-			const slugAry:[string] = params.slug as [string]
+			const slugAry: [string] = params.slug as [string]
 			slugAry.map((slug: string) => {
 				path += '/' + slug
 			})
@@ -41,7 +41,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 	const isBuildComplete = fs.existsSync(buildFilePath)
 
 	//determine if we are in preview mode
-	const isPreview:boolean = (preview || isDevelopmentMode);
+	const isPreview: boolean = (preview || isDevelopmentMode);
 
 	const agilitySyncClient = getSyncClient({
 		isPreview: isPreview,
@@ -49,7 +49,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 		isIncremental: isBuildComplete
 	});
 
-	if (! agilitySyncClient) {
+	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
 		return {
 			notFound: true
@@ -71,13 +71,17 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 		console.warn("No sitemap found after sync.");
 	}
 
-	let pageInSitemap = sitemap[path];
+	let pageInSitemap = null
 	let page: any = null;
 	let dynamicPageItem: any = null;
 
 	if (path === '/') {
+		//home page
 		let firstPagePathInSitemap = Object.keys(sitemap)[0];
 		pageInSitemap = sitemap[firstPagePathInSitemap];
+	} else {
+		//all other pages
+		pageInSitemap = sitemap[path];
 	}
 
 	if (pageInSitemap) {
@@ -123,7 +127,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 		const modulesForThisContentZone = page.zones[zoneName];
 
 		//loop through the zone's modules
-		await asyncForEach(modulesForThisContentZone, async (moduleItem: { module: string,  item: any, customData:any }) => {
+		await asyncForEach(modulesForThisContentZone, async (moduleItem: { module: string, item: any, customData: any }) => {
 
 			//find the react component to use for the module
 			const moduleComponent = getModule(moduleItem.module)
@@ -171,15 +175,15 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 
 
 	//resolve data for other shared components
-	const globalData:{ [ name: string ] : any  } = {}
+	const globalData: { [name: string]: any } = {}
 	if (globalComponents) {
 		const keys = Object.keys(globalComponents)
-		for (let i = 0; i<keys.length; i++ ) {
+		for (let i = 0; i < keys.length; i++) {
 			const key = keys[i]
 			try {
 				const fnc = globalComponents[key].getCustomInitialProps
 
-				const retData = await fnc({ agility: agilitySyncClient.store, languageCode, channelName, page, pageInSitemap, dynamicPageItem  });
+				const retData = await fnc({ agility: agilitySyncClient.store, languageCode, channelName, page, pageInSitemap, dynamicPageItem });
 
 				globalData[key] = retData
 			} catch (error) {
@@ -202,13 +206,13 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 	}
 }
 
-const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string[]> => {
+const getAgilityPaths = async ({ preview, locales, defaultLocale }): Promise<string[]> => {
 
 	//determine if we are in preview mode
 	const isPreview = isDevelopmentMode || preview;
 
-	if (! defaultLocale) defaultLocale = agilityConfig.locales[0]
-	if (! locales) locales = agilityConfig.locales
+	if (!defaultLocale) defaultLocale = agilityConfig.locales[0]
+	if (!locales) locales = agilityConfig.locales
 
 	const fs = require("fs-extra")
 
@@ -222,15 +226,15 @@ const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string
 		isIncremental: isBuildComplete
 	});
 
-	if (! agilitySyncClient) {
+	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
 		return [];
 	}
 
 
-	let paths:string[] = []
+	let paths: string[] = []
 
-	for (let i=0; i<locales.length; i++) {
+	for (let i = 0; i < locales.length; i++) {
 		const languageCode = locales[i].toLowerCase()
 
 		const sitemapFlat = await agilitySyncClient.store.getSitemap({
@@ -244,6 +248,7 @@ const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string
 		}
 
 		//returns an array of paths as a string (i.e.  ['/home', '/posts'] )
+
 		const thesePaths = Object.keys(sitemapFlat)
 			.filter(path => {
 				const sitemapNode = sitemapFlat[path]
@@ -251,11 +256,11 @@ const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string
 					&& !sitemapNode.isFolder
 			})
 
-		 if (languageCode !== defaultLocale.toLowerCase()) {
-		 	//prepend
+		if (languageCode !== defaultLocale.toLowerCase()) {
+			//prepend
 			paths = paths.concat(thesePaths.map(path => `/${languageCode}${path}`))
 
-		 } else {
+		} else {
 			paths = paths.concat(thesePaths)
 		}
 	}
@@ -264,7 +269,7 @@ const getAgilityPaths = async ({preview, locales, defaultLocale}):Promise<string
 }
 
 
-const validatePreview = async({ agilityPreviewKey, slug }: any) => {
+const validatePreview = async ({ agilityPreviewKey, slug }: any) => {
 	//Validate the preview key
 	if (!agilityPreviewKey) {
 		return {
@@ -297,7 +302,7 @@ const validatePreview = async({ agilityPreviewKey, slug }: any) => {
 
 }
 
-const generatePreviewKey =() => {
+const generatePreviewKey = () => {
 	//the string we want to encode
 	const str = `-1_${securityKey}_Preview`;
 
@@ -335,40 +340,40 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 	const isBuildComplete = fs.existsSync(buildFilePath);
 
 	const agilitySyncClient = getSyncClient({
-	  isPreview,
-	  isDevelopmentMode,
-	  isIncremental: isBuildComplete,
+		isPreview,
+		isDevelopmentMode,
+		isIncremental: isBuildComplete,
 	});
 
 	if (!agilitySyncClient) {
-	  console.log("Agility CMS => Sync client could not be accessed.");
-	  return [];
+		console.log("Agility CMS => Sync client could not be accessed.");
+		return [];
 	}
 
 	console.log(
-	  `AgilityCMS => Sync On-demand ${isPreview ? "Preview" : "Live"} Mode`
+		`AgilityCMS => Sync On-demand ${isPreview ? "Preview" : "Live"} Mode`
 	);
 
 	await prepIncrementalMode();
 	await agilitySyncClient.runSync();
 
 	const sitemapFlat = await agilitySyncClient.store.getSitemap({
-	  channelName,
-	  languageCode,
+		channelName,
+		languageCode,
 	});
 
 	const dynamicPaths = Object.keys(sitemapFlat).filter((s) => {
-	  if (sitemapFlat[s].contentID == contentID) {
-		return s;
-	  }
+		if (sitemapFlat[s].contentID == contentID) {
+			return s;
+		}
 	});
 
 	if (dynamicPaths.length > 0) {
-	  return dynamicPaths[0]; //return the first one found
+		return dynamicPaths[0]; //return the first one found
 	} else {
-	  return null; //no dynamic path
+		return null; //no dynamic path
 	}
-  }
+}
 
 
 
