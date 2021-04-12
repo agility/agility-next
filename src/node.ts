@@ -13,7 +13,7 @@ const isDevelopmentMode = process.env.NODE_ENV === "development"
 
 
 const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, getModule, globalComponents }: AgilityGetStaticPropsContext): Promise<AgilityPageProps> => {
-
+console.log("TEST LOG")
 	//use locale or defaultLocale if it's provided for languageCode
 	let languageCode = (locale || defaultLocale || agilityConfig.locales[0]).toLowerCase()
 
