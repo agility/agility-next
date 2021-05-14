@@ -24,6 +24,9 @@ const setBuildLog = (builtYN) => {
 	const rootPath = process.cwd()
 
 	const filePath = `${rootPath}/${agilityConfig.rootCachePath}/build.log`
+
+console.log("setBuildLog", {builtYN, filePath})
+
 	if (fs.existsSync(filePath)) {
 		fs.unlinkSync(filePath);
 	}

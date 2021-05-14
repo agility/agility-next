@@ -30,7 +30,7 @@ const handlePreview = () => {
 		previewAPIUrl += `&ContentID=${dynamicPageContentID}`;
 	}
 
-	console.log("Activating preview", previewAPIUrl)
+	if (console) console.log("Activating preview", previewAPIUrl)
 
 	setTimeout(function() {
 		//do the redirect
