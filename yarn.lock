@@ -10,10 +10,10 @@
     axios "^0.21.1"
     axios-cache-adapter "^2.4.1"
 
-"@agility/content-sync@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@agility/content-sync/-/content-sync-1.0.1.tgz#caf8d15403da7339c23b8884a27dfeec56acb627"
-  integrity sha512-hJl2MKL1cc22u+BITTsIs+TKYBGH6JiO1t5fBC1BGzckJjrPTM+1sBGftJUGcGiqO4lDcVzhBgwqjjQv+rQyUA==
+"@agility/content-sync@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@agility/content-sync/-/content-sync-1.0.3.tgz#33441a17fb7b22a54f51a870c8fecf5d211298f2"
+  integrity sha512-KhaSiD3j+XXh2/oWy3+WrizBHGTxq33yWX6Qow4sGIRH4o5+suQzuBEZUyj/Kj5fEDuTV6AJIJseKhggQbaNpA==
   dependencies:
     "@agility/content-fetch" "^1.0.0"
     dotenv "^8.2.0"

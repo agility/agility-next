@@ -42,10 +42,13 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 
 	//determine if we have access to the sync folder
 	const buildFolder = `${process.cwd()}/${agilityConfig.rootCachePath}`
-	if (!fs.existsSync(buildFolder)) {
+	const buildFilePath = `${buildFolder}/build.log`
+	const isBuildComplete = fs.existsSync(buildFilePath)
+	//HACK
+	if ((!fs.existsSync(buildFolder))) {
 		/* *** SYNC NOT AVAILABLE *** */
 		//the build folder does not exist, can't use sync client...
-console.warn("*** SYNC NOT AVAILEBLE - USING REST API ***")
+console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 
 		agilityRestClient = agilityRestAPI.getApi({
 			guid: agilityConfig.guid,
@@ -58,8 +61,6 @@ console.warn("*** SYNC NOT AVAILEBLE - USING REST API ***")
 		/* *** SYNC AVAILABLE *** */
 
 		//determine if we've already done a full build yet
-		const buildFilePath = `${buildFolder}/build.log`
-		const isBuildComplete = fs.existsSync(buildFilePath)
 
 		agilitySyncClient = getSyncClient({
 			isPreview: isPreview,
@@ -118,7 +119,8 @@ console.warn("*** SYNC NOT AVAILEBLE - USING REST API ***")
 		} else {
 			page = await agilityRestClient.getPage({
 				pageID: pageInSitemap.pageID,
-				languageCode: languageCode
+				languageCode: languageCode,
+				contentLinkDepth: 3
 			});
 		}
 
