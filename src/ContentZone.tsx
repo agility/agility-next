@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { ContentZoneProps } from './types';
 
 
-export const ContentZone:FC<ContentZoneProps> = ({ name, page, pageInSitemap, dynamicPageItem, languageCode, channelName, getModule }) => {
+export const ContentZone:FC<ContentZoneProps> = ({ name, page, pageInSitemap, dynamicPageItem, languageCode, channelName, getModule, isDevelopmentMode, isPreview }) => {
 
 	const RenderModules = () => {
 		if (!page) return null
@@ -20,7 +20,10 @@ export const ContentZone:FC<ContentZoneProps> = ({ name, page, pageInSitemap, dy
 				 module: m.item,
 				 languageCode,
 				 channelName,
-				 customData: m.customData || null
+				 customData: m.customData || null,
+				 isDevelopmentMode,
+				 isPreview
+
 			}
 
 			if (AgilityModule) {

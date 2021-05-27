@@ -5,6 +5,7 @@ import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types"
 //Agility API stuff
 import { agilityConfig, getSyncClient, prepIncrementalMode } from './config'
 import { AgilityPageProps } from "./types"
+import agilityRestAPI from '@agility/content-fetch'
 
 const securityKey = agilityConfig.securityKey
 const channelName = agilityConfig.channelName
@@ -35,37 +36,60 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 
 	const fs = require("fs-extra")
 
-	//determine if we've already done a full build yet
+	let agilitySyncClient = null
+	let agilityRestClient = null
+	let isPreview: boolean = (preview || isDevelopmentMode);
 
-	const buildFilePath = `${process.cwd()}/${agilityConfig.rootCachePath}/build.log`
-	const isBuildComplete = fs.existsSync(buildFilePath)
+	//determine if we have access to the sync folder
+	const buildFolder = `${process.cwd()}/${agilityConfig.rootCachePath}`
+	if (!fs.existsSync(buildFolder)) {
+		/* *** SYNC NOT AVAILABLE *** */
+		//the build folder does not exist, can't use sync client...
+console.warn("*** SYNC NOT AVAILEBLE - USING REST API ***")
 
-	//determine if we are in preview mode
-	const isPreview: boolean = (preview || isDevelopmentMode);
+		agilityRestClient = agilityRestAPI.getApi({
+			guid: agilityConfig.guid,
+			apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
+			isPreview
+		});
 
-	const agilitySyncClient = getSyncClient({
-		isPreview: isPreview,
-		isDevelopmentMode,
-		isIncremental: isBuildComplete
-	});
 
-	if (!agilitySyncClient) {
-		console.log("AgilityCMS => Sync client could not be accessed.")
-		return {
-			notFound: true
-		};
-	}
+	} else {
+		/* *** SYNC AVAILABLE *** */
 
-	if (preview || isBuildComplete) {
-		//only do on-demand sync in next's preview mode or incremental build...
-		console.log(`AgilityCMS => Sync On-demand ${isPreview ? "Preview" : "Live"} Mode`)
+		//determine if we've already done a full build yet
+		const buildFilePath = `${buildFolder}/build.log`
+		const isBuildComplete = fs.existsSync(buildFilePath)
 
-		await prepIncrementalMode()
-		await agilitySyncClient.runSync();
+		agilitySyncClient = getSyncClient({
+			isPreview: isPreview,
+			isDevelopmentMode,
+			isIncremental: isBuildComplete
+		});
+
+		if (!agilitySyncClient) {
+			console.log("AgilityCMS => Sync client could not be accessed.")
+			return {
+				notFound: true
+			};
+		}
+
+		if (preview || isBuildComplete) {
+			//only do on-demand sync in next's preview mode or incremental build...
+			console.log(`AgilityCMS => Sync On-demand ${isPreview ? "Preview" : "Live"} Mode`)
+
+			await prepIncrementalMode()
+			await agilitySyncClient.runSync();
+		}
 	}
 
 	//get sitemap
-	const sitemap = await agilitySyncClient.store.getSitemap({ channelName, languageCode });
+	let sitemap = null
+	if (agilitySyncClient) {
+		sitemap = await agilitySyncClient.store.getSitemap({ channelName, languageCode });
+	} else {
+		sitemap = await agilityRestClient.getSitemapFlat({ channelName, languageCode })
+	}
 
 	if (sitemap === null) {
 		console.warn("No sitemap found after sync.");
@@ -86,10 +110,17 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 
 	if (pageInSitemap) {
 		//get the page
-		page = await agilitySyncClient.store.getPage({
-			pageID: pageInSitemap.pageID,
-			languageCode: languageCode
-		});
+		if (agilitySyncClient) {
+			page = await agilitySyncClient.store.getPage({
+				pageID: pageInSitemap.pageID,
+				languageCode: languageCode
+			});
+		} else {
+			page = await agilityRestClient.getPage({
+				pageID: pageInSitemap.pageID,
+				languageCode: languageCode
+			});
+		}
 
 	} else {
 		//Could not find page
@@ -109,10 +140,17 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 
 	//if there is a dynamic page content id on this page, grab it...
 	if (pageInSitemap.contentID > 0) {
-		dynamicPageItem = await agilitySyncClient.store.getContentItem({
-			contentID: pageInSitemap.contentID,
-			languageCode: languageCode
-		});
+		if (agilitySyncClient) {
+			dynamicPageItem = await agilitySyncClient.store.getContentItem({
+				contentID: pageInSitemap.contentID,
+				languageCode: languageCode
+			});
+		} else {
+			dynamicPageItem = await agilityRestClient.getContentItem({
+				contentID: pageInSitemap.contentID,
+				languageCode: languageCode
+			})
+		}
 	}
 
 	//resolve the page template
@@ -144,7 +182,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 					const moduleData = await moduleComponent.getCustomInitialProps({
 						page,
 						item: moduleItem.item,
-						agility: agilitySyncClient.store,
+						agility: agilitySyncClient ? agilitySyncClient.store : agilityRestClient,
 						languageCode,
 						channelName,
 						pageInSitemap,
@@ -183,7 +221,14 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 			try {
 				const fnc = globalComponents[key].getCustomInitialProps
 
-				const retData = await fnc({ agility: agilitySyncClient.store, languageCode, channelName, page, pageInSitemap, dynamicPageItem });
+				const retData = await fnc({
+					agility: agilitySyncClient ? agilitySyncClient.store : agilityRestClient,
+					languageCode,
+					channelName,
+					page,
+					pageInSitemap,
+					dynamicPageItem
+				});
 
 				globalData[key] = retData
 			} catch (error) {
@@ -333,31 +378,13 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 
 	//TODO: check to see if this slug starts with a language code, and IF SO we need to use that languageCode...
 
-	const fs = require("fs-extra")
-
-	//determine if we've already done a full build yet
-	const buildFilePath = `${process.cwd()}/${agilityConfig.rootCachePath}/build.log`;
-	const isBuildComplete = fs.existsSync(buildFilePath);
-
-	const agilitySyncClient = getSyncClient({
-		isPreview,
-		isDevelopmentMode,
-		isIncremental: isBuildComplete,
+	const agilityRestClient = agilityRestAPI.getApi({
+		guid: agilityConfig.guid,
+		apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
+		isPreview
 	});
 
-	if (!agilitySyncClient) {
-		console.log("Agility CMS => Sync client could not be accessed.");
-		return [];
-	}
-
-	console.log(
-		`AgilityCMS => Sync On-demand ${isPreview ? "Preview" : "Live"} Mode`
-	);
-
-	await prepIncrementalMode();
-	await agilitySyncClient.runSync();
-
-	const sitemapFlat = await agilitySyncClient.store.getSitemap({
+	const sitemapFlat = await agilityRestClient.getSitemap({
 		channelName,
 		languageCode,
 	});

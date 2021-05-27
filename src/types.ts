@@ -76,7 +76,9 @@ export interface ModuleProps<T> {
 	languageCode: string
 	channelName: string
 	pageInSitemap: any
-	dynamicPageItem?: ContentItem<any>
+	dynamicPageItem?: ContentItem<any>,
+	isDevelopmentMode: boolean
+	isPreview: boolean
 }
 
 export interface DynamicModuleProps<T, D> {
@@ -136,7 +138,9 @@ export interface ContentZoneProps {
 	dynamicPageItem?:any
 	languageCode:string
 	channelName:string
-	getModule(moduleName:string): ModuleWithInit
+	getModule(moduleName:string): ModuleWithInit,
+	isDevelopmentMode: boolean
+	isPreview: boolean
 }
 
 export interface Properties {
