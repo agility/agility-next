@@ -48,7 +48,7 @@ const getAgilityPageProps = async ({ params, preview, locale, defaultLocale, get
 	if ((!fs.existsSync(buildFolder))) {
 		/* *** SYNC NOT AVAILABLE *** */
 		//the build folder does not exist, can't use sync client...
-console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
+		console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 
 		agilityRestClient = agilityRestAPI.getApi({
 			guid: agilityConfig.guid,
@@ -96,6 +96,10 @@ console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 		console.warn("No sitemap found after sync.");
 	}
 
+
+
+
+
 	let pageInSitemap = null
 	let page: any = null;
 	let dynamicPageItem: any = null;
@@ -108,6 +112,8 @@ console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 		//all other pages
 		pageInSitemap = sitemap[path];
 	}
+
+	let notFound = false
 
 	if (pageInSitemap) {
 		//get the page
@@ -127,91 +133,13 @@ console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 	} else {
 		//Could not find page
 		console.warn('page [' + path + '] not found in sitemap.');
-		return {
-			notFound: true
-		};
+		notFound: true
 	}
 
 	if (!page) {
 		console.warn('page [' + path + '] not found in getpage method.');
-		return {
-			notFound: true
-		};
+		notFound = true
 	}
-
-
-	//if there is a dynamic page content id on this page, grab it...
-	if (pageInSitemap.contentID > 0) {
-		if (agilitySyncClient) {
-			dynamicPageItem = await agilitySyncClient.store.getContentItem({
-				contentID: pageInSitemap.contentID,
-				languageCode: languageCode
-			});
-		} else {
-			dynamicPageItem = await agilityRestClient.getContentItem({
-				contentID: pageInSitemap.contentID,
-				languageCode: languageCode
-			})
-		}
-	}
-
-	//resolve the page template
-	const pageTemplateName = page.templateName.replace(/[^0-9a-zA-Z]/g, '');
-
-	//resolve the modules per content zone
-	await asyncForEach(Object.keys(page.zones), async (zoneName: string) => {
-
-		let modules: { moduleName: string; item: any, customData: any }[] = [];
-
-		//grab the modules for this content zone
-		const modulesForThisContentZone = page.zones[zoneName];
-
-		//loop through the zone's modules
-		await asyncForEach(modulesForThisContentZone, async (moduleItem: { module: string, item: any, customData: any }) => {
-
-			//find the react component to use for the module
-			const moduleComponent = getModule(moduleItem.module)
-
-			if (moduleComponent && moduleComponent.getCustomInitialProps) {
-				//resolve any additional data for the modules
-
-				//we have some additional data in the module we'll need, execute that method now, so it can be included in SSG
-				if (isDevelopmentMode) {
-					console.log(`AgilityCMS => Fetching additional data via getCustomInitialProps for ${moduleItem.module}...`);
-				}
-
-				try {
-					const moduleData = await moduleComponent.getCustomInitialProps({
-						page,
-						item: moduleItem.item,
-						agility: agilitySyncClient ? agilitySyncClient.store : agilityRestClient,
-						languageCode,
-						channelName,
-						pageInSitemap,
-						dynamicPageItem
-					});
-
-					//if we have additional module data, then add it to the module props using 'customData'
-					if (moduleData != null) {
-						moduleItem.customData = moduleData;
-					}
-				} catch (error) {
-					throw new Error(`AgilityCMS => Error get custom data for module ${moduleItem.module}: ${error}`)
-				}
-			}
-
-			modules.push({
-				moduleName: moduleItem.module,
-				item: moduleItem.item,
-				customData: moduleItem.customData || null
-			})
-		})
-
-
-		//store as dictionary
-		page.zones[zoneName] = modules;
-
-	})
 
 
 	//resolve data for other shared components
@@ -236,12 +164,90 @@ console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 			} catch (error) {
 				throw new Error(`AgilityCMS => Error calling global data function ${key}: ${error}`)
 			}
-
 		}
 	}
 
+	let pageTemplateName = null
+
+	if (!notFound) {
+
+		//if there is a dynamic page content id on this page, grab it...
+		if (pageInSitemap.contentID > 0) {
+			if (agilitySyncClient) {
+				dynamicPageItem = await agilitySyncClient.store.getContentItem({
+					contentID: pageInSitemap.contentID,
+					languageCode: languageCode
+				});
+			} else {
+				dynamicPageItem = await agilityRestClient.getContentItem({
+					contentID: pageInSitemap.contentID,
+					languageCode: languageCode
+				})
+			}
+		}
+
+		//resolve the page template
+		pageTemplateName = page.templateName.replace(/[^0-9a-zA-Z]/g, '');
+
+		//resolve the modules per content zone
+		await asyncForEach(Object.keys(page.zones), async (zoneName: string) => {
+
+			let modules: { moduleName: string; item: any, customData: any }[] = [];
+
+			//grab the modules for this content zone
+			const modulesForThisContentZone = page.zones[zoneName];
+
+			//loop through the zone's modules
+			await asyncForEach(modulesForThisContentZone, async (moduleItem: { module: string, item: any, customData: any }) => {
+
+				//find the react component to use for the module
+				const moduleComponent = getModule(moduleItem.module)
+
+				if (moduleComponent && moduleComponent.getCustomInitialProps) {
+					//resolve any additional data for the modules
+
+					//we have some additional data in the module we'll need, execute that method now, so it can be included in SSG
+					if (isDevelopmentMode) {
+						console.log(`AgilityCMS => Fetching additional data via getCustomInitialProps for ${moduleItem.module}...`);
+					}
+
+					try {
+						const moduleData = await moduleComponent.getCustomInitialProps({
+							page,
+							item: moduleItem.item,
+							agility: agilitySyncClient ? agilitySyncClient.store : agilityRestClient,
+							languageCode,
+							channelName,
+							pageInSitemap,
+							dynamicPageItem
+						});
+
+						//if we have additional module data, then add it to the module props using 'customData'
+						if (moduleData != null) {
+							moduleItem.customData = moduleData;
+						}
+					} catch (error) {
+						throw new Error(`AgilityCMS => Error get custom data for module ${moduleItem.module}: ${error}`)
+					}
+				}
+
+				modules.push({
+					moduleName: moduleItem.module,
+					item: moduleItem.item,
+					customData: moduleItem.customData || null
+				})
+			})
+
+
+			//store as dictionary
+			page.zones[zoneName] = modules;
+
+		})
+
+	}
+
 	return {
-		sitemapNode: pageInSitemap,
+		sitemapNode: pageInSitemap || null,
 		page,
 		dynamicPageItem,
 		pageTemplateName,
@@ -249,7 +255,8 @@ console.warn("*** SYNC NOT AVAILABLE - USING REST API ***")
 		languageCode,
 		channelName,
 		isPreview,
-		isDevelopmentMode
+		isDevelopmentMode,
+		notFound
 	}
 }
 
