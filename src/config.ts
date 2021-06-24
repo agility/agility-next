@@ -16,14 +16,15 @@ export const getSyncClient = ({ isPreview, isDevelopmentMode, isIncremental }) =
 
 	const rootPath = process.cwd()
 
-
 	let cachePath = `${rootPath}/${agilityConfig.rootCachePath}/${agilityConfig.guid}/${isPreview ? "preview" : "live" }`;
 
-	//if we are in "incremental" mode, we need to use the tmp folder...
-	if (isIncremental) {
-		//TODO: this is the tmp folder for vercel...  if running in a regular container, the cache path can stay the same...
-		cachePath = `/tmp/agilitycache/${agilityConfig.guid}/${isPreview ? "preview" : "live"}`;
-	}
+	//if we are in "incremental" mode on Vercel or Netlify we need to use the tmp folder...
+	 if (isIncremental
+			&& (process.env.VERCEL == "1" || process.env.SITE_ID != undefined)
+	 	) {
+	 	//this is the tmp folder for vercel...  if running in a regular container, the cache path can stay the same...
+	 	cachePath = `/tmp/agilitycache/${agilityConfig.guid}/${isPreview ? "preview" : "live"}`;
+	 }
 
 	const apiKey = isPreview
 		? agilityConfig.previewAPIKey
@@ -49,8 +50,15 @@ export const getSyncClient = ({ isPreview, isDevelopmentMode, isIncremental }) =
 	});
 };
 
-
+/**
+ * Copy files from the main root cache path to the tmp folder if we are on a readonly file system.
+ * Currently only needed on Vercel and Netlify.
+ */
 export const prepIncrementalMode = async () => {
+
+	if (process.env.VERCEL != "1"
+		&& process.env.SITE_ID === undefined
+		) return
 
 	const rootPath = process.cwd()
 
@@ -65,6 +73,7 @@ export const prepIncrementalMode = async () => {
 	//check for the build file in here...
 	if (!fs.existsSync(buildFilePath)) {
 		//copy everything across from cachePath
+console.log(`Prepping incremental/preview mode - copying ${cachePath} to ${tempPath}`)
 		await fs.copy(cachePath, tempPath)
 	}
 }

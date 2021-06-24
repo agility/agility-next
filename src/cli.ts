@@ -9,7 +9,7 @@ const { getSyncClient, agilityConfig  } = require('./config')
 
 const runSync = async () => {
 	setBuildLog(false)
-
+console.log("SYNC rootpath", agilityConfig.rootCachePath)
 	const agilitySyncClient = getSyncClient({ isPreview: true, isDevelopmentMode: true })
 	if (!agilitySyncClient) {
 		console.log("AgilityCMS => Sync client could not be accessed.")
@@ -24,6 +24,7 @@ const setBuildLog = (builtYN) => {
 	const rootPath = process.cwd()
 
 	const filePath = `${rootPath}/${agilityConfig.rootCachePath}/build.log`
+
 	if (fs.existsSync(filePath)) {
 		fs.unlinkSync(filePath);
 	}
@@ -72,6 +73,8 @@ const postBuild = async () => {
 const cleanSync = async () => {
 
 	setBuildLog(false)
+
+	console.log("CLEAR SYNC rootpath", agilityConfig.rootCachePath)
 
 	const agilitySyncClient = getSyncClient({ isPreview: true, isDevelopmentMode: true })
 	if (!agilitySyncClient) {
