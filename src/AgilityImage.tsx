@@ -9,7 +9,7 @@ export const AgilityImage: FC<ImageProps> = (props) => {
 		loader = ({ src, width,height, quality }) => {
 			const w = width > 0 ? `&w=${width}` : ``
 			const h = height > 0 ? `&h=${height}` : ``
-			return `${src}?q=${quality || 75}${w}${h}`
+			return `${src}?format=auto&q=${quality || 75}${w}${h}`
 		}
 	} else {
 		loader = props.loader
