@@ -84,7 +84,7 @@ const getAgilityPageProps = async ({
       };
     }
 
-    if (preview || isBuildComplete) {
+    if (isPreview || isBuildComplete) {
       //only do on-demand sync in next's preview mode or incremental build...
       console.log(
         `AgilityCMS => Sync On-demand ${isPreview ? "Preview" : "Live"} Mode`
