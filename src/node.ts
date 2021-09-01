@@ -9,6 +9,7 @@ import agilityRestAPI from "@agility/content-fetch";
 
 const securityKey = agilityConfig.securityKey;
 const channelName = agilityConfig.channelName;
+const sync = agilityConfig.sync;
 
 const isDevelopmentMode = process.env.NODE_ENV === "development";
 
@@ -45,6 +46,8 @@ const getAgilityPageProps = async ({
 
   const fs = require("fs-extra");
 
+  console.log("TESTTT!!!!");
+
   let agilitySyncClient = null;
   let agilityRestClient = null;
   let isPreview: boolean = preview || isDevelopmentMode;
@@ -54,7 +57,7 @@ const getAgilityPageProps = async ({
   const buildFilePath = `${buildFolder}/build.log`;
   const isBuildComplete = fs.existsSync(buildFilePath);
   //HACK
-  if (!fs.existsSync(buildFolder)) {
+  if (sync === false || !fs.existsSync(buildFolder)) {
     /* *** SYNC NOT AVAILABLE *** */
     //the build folder does not exist, can't use sync client...
     console.warn("*** SYNC NOT AVAILABLE - USING REST API ***");
@@ -292,35 +295,56 @@ const getAgilityPaths = async ({
   const fs = require("fs-extra");
 
   //determine if we've already done a full build yet
+  const buildFolder = `${process.cwd()}/${agilityConfig.rootCachePath}`;
   const buildFilePath = `${process.cwd()}/${
     agilityConfig.rootCachePath
   }/build.log`;
   const isBuildComplete = fs.existsSync(buildFilePath);
 
+  // set up sync client
   const agilitySyncClient = getSyncClient({
     isPreview,
     isDevelopmentMode,
     isIncremental: isBuildComplete,
   });
 
-  if (!agilitySyncClient) {
-    console.log("AgilityCMS => Sync client could not be accessed.");
-    return [];
-  }
+  // set up rest client
+  const agilityRestClient = agilityRestAPI.getApi({
+    guid: agilityConfig.guid,
+    apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
+    isPreview,
+  });
+
+  // if (!agilitySyncClient) {
+  //   console.log("AgilityCMS => Sync client could not be accessed.");
+  //   return [];
+  // }
 
   let paths: string[] = [];
 
   for (let i = 0; i < locales.length; i++) {
     const languageCode = locales[i].toLowerCase();
 
-    const sitemapFlat = await agilitySyncClient.store.getSitemap({
-      channelName,
-      languageCode,
-    });
+    let sitemapFlat;
+
+    if (sync === false || !fs.existsSync(buildFolder)) {
+      console.log(
+        "AgilityCMS => Sync client could not be accessed, using REST API."
+      );
+      sitemapFlat = await agilityRestClient.getSitemapFlat({
+        channelName,
+        languageCode,
+      });
+    } else {
+      sitemapFlat = await agilitySyncClient.store.getSitemap({
+        channelName,
+        languageCode,
+      });
+    }
 
     if (!sitemapFlat) {
       console.warn(
-        `AgilityCMS => No Sitemap found for locale ${languageCode}.  Make sure your locales and environment vars are setup correctly.`
+        `AgilityCMS => No Sitemap found for locale ${languageCode}.  Make sure your locales and environment variables are setup correctly.`
       );
       continue;
     }
