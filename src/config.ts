@@ -19,7 +19,8 @@ export const getSyncClient = ({
 }) => {
   // we dont want to get a sync client if it has been disabled
   if (!agilityConfig.sync) {
-    throw "AgilityCMS => Sync SDK has been disabled.";
+    console.log("AgilityCMS => Sync SDK has been disabled. SyncClient will be NULL.");
+    return;
   }
 
   const rootPath = process.cwd();

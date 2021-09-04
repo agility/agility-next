@@ -46,8 +46,6 @@ const getAgilityPageProps = async ({
 
   const fs = require("fs-extra");
 
-  console.log("TESTTT!!!!");
-
   let agilitySyncClient = null;
   let agilityRestClient = null;
   let isPreview: boolean = preview || isDevelopmentMode;
@@ -67,7 +65,7 @@ const getAgilityPageProps = async ({
       apiKey: isPreview
         ? agilityConfig.previewAPIKey
         : agilityConfig.fetchAPIKey,
-      isPreview,
+      isPreview
     });
   } else {
     /* *** SYNC AVAILABLE *** */
@@ -155,6 +153,7 @@ const getAgilityPageProps = async ({
     console.warn("page [" + path + "] not found in getpage method.");
     notFound = true;
   }
+  
 
   //resolve data for other shared components
   const globalData: { [name: string]: any } = {};
