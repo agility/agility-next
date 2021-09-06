@@ -69,7 +69,7 @@ const getAgilityPageProps = async ({
   if (sync === false || !fs.existsSync(buildFolder)) {
     /* *** SYNC NOT AVAILABLE *** */
     //the build folder does not exist, can't use sync client...
-    if(!fs.existsSync(buildFolder)) {
+    if(!fs.existsSync(buildFolder) && sync === true) {
       console.log("AgilityCMS => Sync unavailable. Could not find build folder. Falling back to using the REST API. There are slight differences in API response format between Sync and the REST API and could cause application errors. Consider disabling sync by setting `AGILITY_SYNC=false` in an environement variable.")
     }
     console.log("AgilityCMS => `getAgilityPageProps` *** USING REST API ***");
