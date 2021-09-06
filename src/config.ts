@@ -1,7 +1,7 @@
 import agilityContentSync from "@agility/content-sync";
 import agilityFileSystem from "@agility/content-sync/src/store-interface-filesystem";
 
-export const agilityConfig = {
+export let agilityConfig = {
   guid: process.env.AGILITY_GUID, //Set your guid here
   fetchAPIKey: process.env.AGILITY_API_FETCH_KEY, //Set your fetch apikey here
   previewAPIKey: process.env.AGILITY_API_PREVIEW_KEY, //set your preview apikey
@@ -19,11 +19,12 @@ export const getSyncClient = ({
 }) => {
   // we dont want to get a sync client if it has been disabled
   if (!agilityConfig.sync) {
-    console.log("AgilityCMS => Sync SDK has been disabled. SyncClient will be NULL.");
     return;
   }
 
   const rootPath = process.cwd();
+
+  
 
   let cachePath = `${rootPath}/${agilityConfig.rootCachePath}/${
     agilityConfig.guid
