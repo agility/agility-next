@@ -57,7 +57,7 @@ export interface CustomInitPropsArg {
 	agility: any
 	languageCode: any
 	channelName: any
-	pageInSitemap: any
+	sitemapNode: any
 	dynamicPageItem?: any
 }
 
@@ -66,7 +66,7 @@ export interface GlobalCustomInitPropsArg {
 	agility: any
 	languageCode: any
 	channelName: any
-	pageInSitemap: any
+	sitemapNode: any
 	dynamicPageItem?: any
 }
 
@@ -75,7 +75,7 @@ export interface ModuleProps<T> {
 	module: ContentItem<T>
 	languageCode: string
 	channelName: string
-	pageInSitemap: any
+	sitemapNode: any
 	dynamicPageItem?: ContentItem<any>,
 	isDevelopmentMode: boolean
 	isPreview: boolean
@@ -86,7 +86,7 @@ export interface DynamicModuleProps<T, D> {
 	module: ContentItem<T>
 	languageCode: string
 	channelName: string
-	pageInSitemap: any
+	sitemapNode: any
 	dynamicPageItem?: ContentItem<D>
 }
 
@@ -134,7 +134,7 @@ export interface ComponentWithInit<TInit = {}> extends FC<AgilityPageProps> {
 export interface ContentZoneProps {
 	name:string
 	page:any
-	pageInSitemap:any
+	sitemapNode:any
 	dynamicPageItem?:any
 	languageCode:string
 	channelName:string

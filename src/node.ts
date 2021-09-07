@@ -80,7 +80,7 @@ const getAgilityPageProps = async ({
         ? agilityConfig.previewAPIKey
         : agilityConfig.fetchAPIKey,
       isPreview,
-      debug: true
+      debug: agilityConfig.debug
     });
   } else {
     /* *** SYNC AVAILABLE *** */
@@ -191,7 +191,7 @@ const getAgilityPageProps = async ({
           languageCode,
           channelName,
           page,
-          pageInSitemap,
+          sitemapNode: pageInSitemap,
           dynamicPageItem,
         });
 
@@ -258,7 +258,7 @@ const getAgilityPageProps = async ({
                   : agilityRestClient,
                 languageCode,
                 channelName,
-                pageInSitemap,
+                sitemapNode: pageInSitemap,
                 dynamicPageItem,
               });
 
@@ -332,6 +332,7 @@ const getAgilityPaths = async ({
     guid: agilityConfig.guid,
     apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
     isPreview,
+    debug: agilityConfig.debug
   });
 
 
@@ -454,6 +455,7 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
     guid: agilityConfig.guid,
     apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
     isPreview,
+    debug: agilityConfig.debug
   });
 
   const sitemapFlat = await agilityRestClient.getSitemapFlat({

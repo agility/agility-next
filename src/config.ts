@@ -10,6 +10,7 @@ export let agilityConfig = {
   securityKey: process.env.AGILITY_SECURITY_KEY, //the website security key used to validate and generate preview keys
   sync: process.env.AGILITY_SYNC !== "false" ? true : false, // flag to disable sync sdk and use REST API only
   rootCachePath: process.env.AGILITY_CACHEPATH || ".next/cache/agility",
+  debug: process.env.AGILITY_DEBUG === "true" ? true : false
 };
 
 export const getSyncClient = ({
