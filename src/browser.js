@@ -5,7 +5,9 @@ const getParameterByName = (name) => {
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
-const handlePreview = () => {
+const handlePreview = ({previewHandlerUrl}) => {
+	let previewUrlToUse = `/api/preview`;
+	if(previewHandlerUrl) previewUrlToUse = previewHandlerUrl;
 
 	if (!process.browser) {
 		//kickout if this is not being executed in the browser
@@ -20,7 +22,7 @@ const handlePreview = () => {
 	}
 
 	//redirect this to our preview API route
-	const previewAPIRoute = `/api/preview`;
+	const previewAPIRoute = previewUrlToUse;
 
 	let previewAPIUrl= `${previewAPIRoute}?slug=${window.location.pathname}&agilitypreviewkey=${agilityPreviewKey}`;
 
