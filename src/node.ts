@@ -20,17 +20,16 @@ const getAgilityPageProps = async ({
   defaultLocale,
   getModule,
   globalComponents,
-  apiOptions
+  apiOptions,
 }: AgilityGetStaticPropsContext): Promise<AgilityPageProps> => {
-
   //set default API Options
   const defaultAPIOptions = {
     onSitemapRetrieved: null,
     expandAllContentLinks: true,
-    contentLinkDepth: 3
-  }
+    contentLinkDepth: 3,
+  };
 
-  apiOptions = {...defaultAPIOptions, ...apiOptions};
+  apiOptions = { ...defaultAPIOptions, ...apiOptions };
 
   //use locale or defaultLocale if it's provided for languageCode
   let languageCode = (
@@ -69,8 +68,10 @@ const getAgilityPageProps = async ({
   if (sync === false || !fs.existsSync(buildFolder)) {
     /* *** SYNC NOT AVAILABLE *** */
     //the build folder does not exist, can't use sync client...
-    if(!fs.existsSync(buildFolder) && sync === true) {
-      console.log("AgilityCMS => Sync unavailable. Could not find build folder. Falling back to using the REST API. There are slight differences in API response format between Sync and the REST API and could cause application errors. Consider disabling sync by setting `AGILITY_SYNC=false` in an environement variable.")
+    if (!fs.existsSync(buildFolder) && sync === true) {
+      console.log(
+        "AgilityCMS => Sync unavailable. Could not find build folder. Falling back to using the REST API. There are slight differences in API response format between Sync and the REST API and could cause application errors. Consider disabling sync by setting `AGILITY_SYNC=false` in an environement variable."
+      );
     }
     console.log("AgilityCMS => `getAgilityPageProps` *** USING REST API ***");
 
@@ -80,7 +81,7 @@ const getAgilityPageProps = async ({
         ? agilityConfig.previewAPIKey
         : agilityConfig.fetchAPIKey,
       isPreview,
-      debug: agilityConfig.debug
+      debug: agilityConfig.debug,
     });
   } else {
     /* *** SYNC AVAILABLE *** */
@@ -125,8 +126,8 @@ const getAgilityPageProps = async ({
     });
   }
 
-  if(apiOptions && apiOptions.onSitemapRetrieved) {
-    apiOptions.onSitemapRetrieved({ sitemap, isPreview, isDevelopmentMode })
+  if (apiOptions && apiOptions.onSitemapRetrieved) {
+    apiOptions.onSitemapRetrieved({ sitemap, isPreview, isDevelopmentMode });
   }
 
   if (sitemap === null) {
@@ -160,7 +161,7 @@ const getAgilityPageProps = async ({
         pageID: pageInSitemap.pageID,
         languageCode: languageCode,
         contentLinkDepth: apiOptions.contentLinkDepth,
-        expandAllContentLinks: apiOptions.expandAllContentLinks
+        expandAllContentLinks: apiOptions.expandAllContentLinks,
       });
     }
   } else {
@@ -173,7 +174,6 @@ const getAgilityPageProps = async ({
     console.warn("page [" + path + "] not found in getpage method.");
     notFound = true;
   }
-  
 
   //resolve data for other shared components
   const globalData: { [name: string]: any } = {};
@@ -332,9 +332,8 @@ const getAgilityPaths = async ({
     guid: agilityConfig.guid,
     apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
     isPreview,
-    debug: agilityConfig.debug
+    debug: agilityConfig.debug,
   });
-
 
   let paths: string[] = [];
 
@@ -344,17 +343,13 @@ const getAgilityPaths = async ({
     let sitemapFlat;
 
     if (sync === false || !fs.existsSync(buildFolder)) {
-      console.log(
-        "AgilityCMS => `getAgilityPaths` *** USING REST API ***"
-      );
+      console.log("AgilityCMS => `getAgilityPaths` *** USING REST API ***");
       sitemapFlat = await agilityRestClient.getSitemapFlat({
         channelName,
         languageCode,
       });
     } else {
-      console.log(
-        "AgilityCMS => `getAgilityPaths` *** USING SYNC API ***"
-      );
+      console.log("AgilityCMS => `getAgilityPaths` *** USING SYNC API ***");
       sitemapFlat = await agilitySyncClient.store.getSitemap({
         channelName,
         languageCode,
@@ -455,7 +450,7 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
     guid: agilityConfig.guid,
     apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
     isPreview,
-    debug: agilityConfig.debug
+    debug: agilityConfig.debug,
   });
 
   const sitemapFlat = await agilityRestClient.getSitemapFlat({
