@@ -1,47 +1,51 @@
 const getParameterByName = (name) => {
-	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    var results = regex.exec(location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-}
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(location.search);
+  return results === null
+    ? ""
+    : decodeURIComponent(results[1].replace(/\+/g, " "));
+};
 
-const handlePreview = () => {
+const handlePreview = (handlePreviewProps) => {
+  let previewUrlToUse = `/api/preview`;
 
-	if (!process.browser) {
-		//kickout if this is not being executed in the browser
-		return false;
-	}
+  if (handlePreviewProps && handlePreviewProps.previewHandlerUrl)
+    previewUrlToUse = handlePreviewProps.previewHandlerUrl;
 
-	const agilityPreviewKey = getParameterByName(`agilitypreviewkey`)
+  if (!process.browser) {
+    //kickout if this is not being executed in the browser
+    return false;
+  }
 
-	if (!agilityPreviewKey) {
-		//kickout if we don't have a preview key
-		return false;
-	}
+  const agilityPreviewKey = getParameterByName(`agilitypreviewkey`);
 
-	//redirect this to our preview API route
-	const previewAPIRoute = `/api/preview`;
+  if (!agilityPreviewKey) {
+    //kickout if we don't have a preview key
+    return false;
+  }
 
-	let previewAPIUrl= `${previewAPIRoute}?slug=${window.location.pathname}&agilitypreviewkey=${agilityPreviewKey}`;
+  //redirect this to our preview API route
+  const previewAPIRoute = previewUrlToUse;
 
-	const dynamicPageContentID = parseInt( getParameterByName('ContentID') ?? getParameterByName('contentID'))
+  let previewAPIUrl = `${previewAPIRoute}?slug=${window.location.pathname}&agilitypreviewkey=${agilityPreviewKey}`;
 
-	if(dynamicPageContentID > 0) {
-		previewAPIUrl += `&ContentID=${dynamicPageContentID}`;
-	}
+  const dynamicPageContentID = parseInt(
+    getParameterByName("ContentID") ?? getParameterByName("contentID")
+  );
 
-	if (console) console.log("Activating preview", previewAPIUrl)
+  if (dynamicPageContentID > 0) {
+    previewAPIUrl += `&ContentID=${dynamicPageContentID}`;
+  }
 
-	setTimeout(function() {
-		//do the redirect
-		window.location.href = previewAPIUrl;
-	}, 2500)
+  if (console) console.log("Activating preview", previewAPIUrl);
 
+  setTimeout(function () {
+    //do the redirect
+    window.location.href = previewAPIUrl;
+  }, 2500);
 
-	return true
+  return true;
+};
 
-}
-
-export {
-	handlePreview
-}
+export { handlePreview };
