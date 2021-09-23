@@ -8,7 +8,7 @@ const { getSyncClient, agilityConfig } = require("./config");
 
 const runSync = async () => {
   if (agilityConfig.sync !== true) {
-    console.log("AgilityCMS => Agility Sync is disabled, skipping sync...");
+    console.log("AgilityCMS => Agility Sync is disabled, using REST API...");
     return;
   }
 
@@ -48,7 +48,7 @@ const setBuildLog = (builtYN) => {
 
 const preBuild = async () => {
   if (agilityConfig.sync !== true) {
-    console.log("AgilityCMS => Agility Sync is disabled, skipping sync...");
+    console.log("AgilityCMS => Agility Sync is disabled, using REST API...");
     return;
   }
 
@@ -82,7 +82,7 @@ const preBuild = async () => {
 
 const postBuild = async () => {
   if (agilityConfig.sync !== true) {
-    console.log("AgilityCMS => Agility Sync is disabled, skipping sync...");
+    console.log("AgilityCMS => Agility Sync is disabled, using REST API...");
     return;
   }
 
@@ -92,7 +92,7 @@ const postBuild = async () => {
 
 const cleanSync = async () => {
   if (agilityConfig.sync !== true) {
-    console.log("AgilityCMS => Agility Sync is disabled, skipping sync...");
+    console.log("AgilityCMS => Agility Sync is disabled, using REST API...");
     return;
   }
 
