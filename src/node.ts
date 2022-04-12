@@ -8,7 +8,7 @@ import { AgilityPageProps } from "./types";
 import agilityRestAPI from "@agility/content-fetch";
 
 const securityKey = agilityConfig.securityKey;
-const channelName = agilityConfig.channelName;
+let channelName = agilityConfig.channelName;
 const sync = agilityConfig.sync;
 
 const isDevelopmentMode = process.env.NODE_ENV === "development";
@@ -21,6 +21,7 @@ const getAgilityPageProps = async ({
   getModule,
   globalComponents,
   apiOptions,
+  channelNameSitemap
 }: AgilityGetStaticPropsContext): Promise<AgilityPageProps> => {
   //set default API Options
   const defaultAPIOptions = {
@@ -30,6 +31,11 @@ const getAgilityPageProps = async ({
   };
 
   apiOptions = { ...defaultAPIOptions, ...apiOptions };
+
+  //If optional channel name prop exists then override default
+  if (channelNameSitemap) {
+    channelName = channelNameSitemap;
+  }
 
   //use locale or defaultLocale if it's provided for languageCode
   let languageCode = (
@@ -304,12 +310,18 @@ const getAgilityPaths = async ({
   preview,
   locales,
   defaultLocale,
+  channelNameSitemap,
 }): Promise<string[]> => {
   //determine if we are in preview mode
   const isPreview = isDevelopmentMode || preview;
 
   if (!defaultLocale) defaultLocale = agilityConfig.locales[0];
   if (!locales) locales = agilityConfig.locales;
+
+  //If optional channel name prop exists then override default
+  if (channelNameSitemap) {
+    channelName = channelNameSitemap;
+  }
 
   const fs = require("fs-extra");
 
