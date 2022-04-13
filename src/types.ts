@@ -51,6 +51,14 @@ export interface AgilityPageProps {
   getModule?(moduleName: string): ModuleWithInit;
 }
 
+export interface AgilityPaths {
+  preview: boolean,
+  locales: string | null,
+  defaultLocale: string | null,
+  channelNameSitemap: string | null,
+  paths: string[],
+}
+
 export interface CustomInitPropsArg {
   item: any;
   page: any;

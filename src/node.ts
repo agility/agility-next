@@ -4,7 +4,7 @@ import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig, getSyncClient, prepIncrementalMode } from "./config";
-import { AgilityPageProps } from "./types";
+import { AgilityPageProps, AgilityPaths } from "./types";
 import agilityRestAPI from "@agility/content-fetch";
 
 const securityKey = agilityConfig.securityKey;
@@ -311,7 +311,7 @@ const getAgilityPaths = async ({
   locales,
   defaultLocale,
   channelNameSitemap,
-}): Promise<string[]> => {
+}): Promise<AgilityPaths[]> => {
   //determine if we are in preview mode
   const isPreview = isDevelopmentMode || preview;
 
@@ -347,7 +347,7 @@ const getAgilityPaths = async ({
     debug: agilityConfig.debug,
   });
 
-  let paths: string[] = [];
+  let paths = []
 
   for (let i = 0; i < locales.length; i++) {
     const languageCode = locales[i].toLowerCase();
