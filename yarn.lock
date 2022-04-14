@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@agility/content-fetch@^1.0.0", "@agility/content-fetch@^1.1.1":
+"@agility/content-fetch@^1.0.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@agility/content-fetch/-/content-fetch-1.1.1.tgz#d8a91ceea8e7809c84ee954cb08444071612b3e0"
   integrity sha512-d7IyZSYL16HGOMhnWs/W4rMqMBUSHfTelDdxrwuGuc3EXlth83VwPVsZZuIxQDI5EJzXOcsvMUT6B1ENDSrd5A==
@@ -10,10 +10,18 @@
     axios "^0.21.1"
     axios-cache-adapter "^2.4.1"
 
-"@agility/content-sync@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@agility/content-sync/-/content-sync-1.0.3.tgz#33441a17fb7b22a54f51a870c8fecf5d211298f2"
-  integrity sha512-KhaSiD3j+XXh2/oWy3+WrizBHGTxq33yWX6Qow4sGIRH4o5+suQzuBEZUyj/Kj5fEDuTV6AJIJseKhggQbaNpA==
+"@agility/content-fetch@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@agility/content-fetch/-/content-fetch-1.1.3.tgz#bbb04d1f0fa53319c96395b67996b9f346f9a8d1"
+  integrity sha512-GAePeNKU69f5VyaGWe/p5hdO3H8aMQ4l1tQCwza5fDmPBxuQoFbo+TYsVyZozAMk+BCj3ED0AFNs77Y2XGRofQ==
+  dependencies:
+    axios "^0.21.1"
+    axios-cache-adapter "^2.4.1"
+
+"@agility/content-sync@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@agility/content-sync/-/content-sync-1.1.3.tgz#0937a4b35d0b1cef825ccb0f83b9b9bec78d9cc2"
+  integrity sha512-AV9d+oUfVvlAXtQsYJaoAHy9PK0eiwzqk2OkP8VhoGZsex6THx98Cxr5GEpjvH5m8bYhTJQhbbBndFoBGmzj0Q==
   dependencies:
     "@agility/content-fetch" "^1.0.0"
     dotenv "^8.2.0"

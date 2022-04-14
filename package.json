@@ -1,7 +1,7 @@
 {
   "name": "@agility/nextjs",
-  "version": "0.4.1",
-  "description": "Agility CMS support for NextJS and Next Image",
+  "version": "0.4.2",
+  "description": "Agility CMS support for working with Next.js and Page Management.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agility/agility-next.git"
@@ -23,26 +23,37 @@
   "keywords": [
     "next",
     "nextjs",
+    "react",
     "agility",
+    "agilitycms",
+    "jamstack",
+    "headless",
     "cms",
-    "headlesscms",
+    "headless-cms",
+    "page-management",
     "react",
     "ssg",
+    "ssr",
+    "isr",
+    "optimized",
+    "serverless",
     "next/image"
   ],
   "author": "Agility CMS",
   "contributors": [
-    "Joel Varty"
+    "Joel Varty",
+    "Joshua Isaac",
+    "Hannah King"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@agility/content-fetch": "^1.1.1",
-    "@agility/content-sync": "^1.0.3",
+    "@agility/content-fetch": "^1.1.3",
+    "@agility/content-sync": "^1.1.3",
     "next": "^11.0.0"
   },
   "devDependencies": {
-    "@agility/content-fetch": "^1.1.1",
-    "@agility/content-sync": "^1.0.3",
+    "@agility/content-fetch": "^1.1.3",
+    "@agility/content-sync": "^1.1.3",
     "@types/node": "^14.14.41",
     "@types/react-dom": "^17.0.2",
     "fs-extra": "^9.1.0",

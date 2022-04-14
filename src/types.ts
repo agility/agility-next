@@ -34,6 +34,7 @@ export interface AgilityGetStaticPropsContext<
    */
   getModule(moduleName: string): ModuleWithInit;
   apiOptions?: ApiOptions;
+  sitemapName?: string
 }
 
 export interface AgilityPageProps {
@@ -48,6 +49,14 @@ export interface AgilityPageProps {
   isDevelopmentMode?: boolean;
   notFound?: boolean;
   getModule?(moduleName: string): ModuleWithInit;
+}
+
+export interface AgilityPaths {
+  preview: boolean,
+  locales: string | null,
+  defaultLocale: string | null,
+  channelNameSitemap: string | null,
+  paths: string[],
 }
 
 export interface CustomInitPropsArg {
