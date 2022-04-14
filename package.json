@@ -1,6 +1,6 @@
 {
   "name": "@agility/nextjs",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Agility CMS support for working with Next.js and Page Management.",
   "repository": {
     "type": "git",
