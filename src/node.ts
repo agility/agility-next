@@ -4,7 +4,7 @@ import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig, getSyncClient, prepIncrementalMode } from "./config";
-import { AgilityPageProps, AgilityPaths } from "./types";
+import { AgilityPageProps } from "./types";
 import agilityRestAPI from "@agility/content-fetch";
 
 const securityKey = agilityConfig.securityKey;
@@ -21,7 +21,7 @@ const getAgilityPageProps = async ({
   getModule,
   globalComponents,
   apiOptions,
-  channelNameSitemap
+  sitemapName
 }: AgilityGetStaticPropsContext): Promise<AgilityPageProps> => {
   //set default API Options
   const defaultAPIOptions = {
@@ -33,8 +33,8 @@ const getAgilityPageProps = async ({
   apiOptions = { ...defaultAPIOptions, ...apiOptions };
 
   //If optional channel name prop exists then override default
-  if (channelNameSitemap) {
-    channelName = channelNameSitemap;
+  if (sitemapName) {
+    channelName = sitemapName;
   }
 
   //use locale or defaultLocale if it's provided for languageCode
@@ -310,8 +310,8 @@ const getAgilityPaths = async ({
   preview,
   locales,
   defaultLocale,
-  channelNameSitemap,
-}): Promise<AgilityPaths[]> => {
+  sitemapName,
+}): Promise<string[]> => {
   //determine if we are in preview mode
   const isPreview = isDevelopmentMode || preview;
 
@@ -319,8 +319,8 @@ const getAgilityPaths = async ({
   if (!locales) locales = agilityConfig.locales;
 
   //If optional channel name prop exists then override default
-  if (channelNameSitemap) {
-    channelName = channelNameSitemap;
+  if (sitemapName) {
+    channelName = sitemapName;
   }
 
   const fs = require("fs-extra");
@@ -347,7 +347,7 @@ const getAgilityPaths = async ({
     debug: agilityConfig.debug,
   });
 
-  let paths = []
+  let paths: string[] = [];
 
   for (let i = 0; i < locales.length; i++) {
     const languageCode = locales[i].toLowerCase();

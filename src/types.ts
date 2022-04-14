@@ -34,7 +34,7 @@ export interface AgilityGetStaticPropsContext<
    */
   getModule(moduleName: string): ModuleWithInit;
   apiOptions?: ApiOptions;
-  channelNameSitemap?: string
+  sitemapName?: string
 }
 
 export interface AgilityPageProps {
