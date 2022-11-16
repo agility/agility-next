@@ -1,55 +1,52 @@
 {
-  "name": "@agility/nextjs",
-  "version": "0.4.1",
-  "description": "Agility CMS support for NextJS and Next Image",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agility/agility-next.git"
-  },
-  "bugs": {
-    "url": "https://github.com/agility/agility-next/issues"
-  },
-  "homepage": "https://github.com/agility/agility-next#readme",
-  "main": "index.js",
-  "bin": {
-    "agility-next": "bin/agility.js"
-  },
-  "scripts": {
-    "clean": "git clean -Xf",
-    "build": "tsc && mv ./dist/* ./ && rm -rf ./dist",
-    "prepare": "yarn build",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "next",
-    "nextjs",
-    "agility",
-    "cms",
-    "headlesscms",
-    "react",
-    "ssg",
-    "next/image"
-  ],
-  "author": "Agility CMS",
-  "contributors": [
-    "Joel Varty"
-  ],
-  "license": "MIT",
-  "peerDependencies": {
-    "@agility/content-fetch": "^1.1.1",
-    "@agility/content-sync": "^1.0.3",
-    "next": "^11.0.0"
-  },
-  "devDependencies": {
-    "@agility/content-fetch": "^1.1.1",
-    "@agility/content-sync": "^1.0.3",
-    "@types/node": "^14.14.41",
-    "@types/react-dom": "^17.0.2",
-    "fs-extra": "^9.1.0",
-    "next": "^11.0.0",
-    "react": "^17.0.1",
-    "ts-loader": "^8.0.18",
-    "typescript": "^4.2.3"
-  },
-  "dependencies": {}
+	"name": "@agility/nextjs",
+	"version": "13.0.0-rc1",
+	"description": "Agility CMS support for NextJS 13+ and Next Image",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/agility/agility-next.git"
+	},
+	"bugs": {
+		"url": "https://github.com/agility/agility-next/issues"
+	},
+	"homepage": "https://github.com/agility/agility-next#readme",
+	"main": "index.js",
+	"scripts": {
+		"clean": "git clean -Xf",
+		"build": "tsc && mv ./dist/* ./ && rm -rf ./dist",
+		"prepare": "yarn build",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"next",
+		"nextjs",
+		"agility",
+		"cms",
+		"headlesscms",
+		"react",
+		"ssg",
+		"ssr",
+		"isr",
+		"next/image"
+	],
+	"author": "Agility CMS",
+	"contributors": [
+		"Joel Varty"
+	],
+	"license": "MIT",
+	"peerDependencies": {
+		"@agility/content-fetch": "^1.1.1",
+		"next": "^11.0.0"
+	},
+	"devDependencies": {
+		"@agility/content-fetch": "^1.1.5",
+		"@types/node": "^18.11.9",
+		"@types/react": "18.0.25",
+		"@types/react-dom": "^17.0.2",
+		"next": "^13.0.3",
+		"react": "18.2.0",
+		"ts-loader": "^8.0.18",
+		"typescript": "4.9.3"
+	},
+	"dependencies": {}
 }
