@@ -156,9 +156,9 @@ export interface ImageField {
   label: string;
   url: string;
   target: string;
-  filesize: Number;
-  height: Number;
-  width: Number;
+  filesize: number;
+  height: number;
+  width: number;
 }
 
 export interface URLField {
@@ -169,6 +169,6 @@ export interface URLField {
 
 export interface ApiOptions {
   onSitemapRetrieved: Function;
-  expandAllContentLinks: Boolean;
-  contentLinkDepth: Number;
+  expandAllContentLinks: boolean;
+  contentLinkDepth: number;
 }
