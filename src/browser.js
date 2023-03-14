@@ -27,8 +27,17 @@ const handlePreview = (handlePreviewProps) => {
 
   //redirect this to our preview API route
   const previewAPIRoute = previewUrlToUse;
+  let slug = window.location.pathname
+  //add the other params back onto the slug so that can be used...
+  const params = new URLSearchParams(window.location.search)
 
-  let previewAPIUrl = `${previewAPIRoute}?slug=${window.location.pathname}&agilitypreviewkey=${agilityPreviewKey}`;
+  params.delete("agilitypreviewkey")
+  params.delete("agilityts")
+  params.delete("AgilityChannelID")
+
+  slug = `${slug}?${params.toString()}`
+
+  let previewAPIUrl = `${previewAPIRoute}?slug=${ encodeURIComponent(slug)}&agilitypreviewkey=${agilityPreviewKey}`;
 
   const dynamicPageContentID = parseInt(
     getParameterByName("ContentID") ?? getParameterByName("contentID")

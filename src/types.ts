@@ -32,7 +32,7 @@ export interface AgilityGetStaticPropsContext<
    * @returns {(FC | ClassicComponent)}
    * @memberof AgilityGetStaticPropsContext
    */
-  getModule(moduleName: string): ModuleWithInit;
+  getModule(moduleName: string): ModuleWithInit | null;
   apiOptions?: ApiOptions;
 }
 
@@ -47,7 +47,7 @@ export interface AgilityPageProps {
   isPreview?: boolean;
   isDevelopmentMode?: boolean;
   notFound?: boolean;
-  getModule?(moduleName: string): ModuleWithInit;
+  getModule?(moduleName: string): ModuleWithInit | null;
 }
 
 export interface CustomInitPropsArg {
@@ -98,6 +98,8 @@ export interface Module<TContent> extends FC<ModuleProps<TContent>> {}
 export interface ModuleWithDynamic<TContent, TDynamicPageItem>
   extends FC<DynamicModuleProps<TContent, TDynamicPageItem>> {}
 
+
+
 /**
  * A component used to render an Agility module that has an additional data access method called getCustomInitialProps
  *
@@ -132,7 +134,7 @@ export interface ContentZoneProps {
   dynamicPageItem?: any;
   languageCode: string;
   channelName: string;
-  getModule(moduleName: string): ModuleWithInit;
+  getModule(moduleName: string): ModuleWithInit | null;
   isDevelopmentMode: boolean;
   isPreview: boolean;
 }
