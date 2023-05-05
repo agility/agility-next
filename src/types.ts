@@ -41,13 +41,13 @@ export interface AgilityPageProps {
   page?: any;
   dynamicPageItem?: any;
   pageTemplateName?: string | null;
-  globalData?: { [name: string]: any };
   languageCode?: string | null;
   channelName?: string | null;
   isPreview?: boolean;
   isDevelopmentMode?: boolean;
   notFound?: boolean;
   getModule?(moduleName: string): ModuleWithInit | null;
+  globalData?: { [name: string]: any };
 }
 
 export interface CustomInitPropsArg {
@@ -78,6 +78,7 @@ export interface ModuleProps<T> {
   dynamicPageItem?: ContentItem<any>;
   isDevelopmentMode: boolean;
   isPreview: boolean;
+  globalData?: { [name: string]: any };
 }
 
 export interface DynamicModuleProps<T, D> {
@@ -87,6 +88,7 @@ export interface DynamicModuleProps<T, D> {
   channelName: string;
   sitemapNode: any;
   dynamicPageItem?: ContentItem<D>;
+  globalData?: { [name: string]: any };
 }
 
 export interface CustomInitProps<T, C> extends ModuleProps<T> {
@@ -137,6 +139,7 @@ export interface ContentZoneProps {
   getModule(moduleName: string): ModuleWithInit | null;
   isDevelopmentMode: boolean;
   isPreview: boolean;
+  globalData?: { [name: string]: any };
 }
 
 export interface Properties {

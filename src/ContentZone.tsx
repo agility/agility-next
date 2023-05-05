@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { ContentZoneProps } from './types';
 
 
-export const ContentZone:FC<ContentZoneProps> = ({ name, page, sitemapNode, dynamicPageItem, languageCode, channelName, getModule, isDevelopmentMode, isPreview }) => {
+export const ContentZone:FC<ContentZoneProps> = ({ name, page, sitemapNode, dynamicPageItem, languageCode, channelName, getModule, isDevelopmentMode, isPreview, globalData }) => {
 
 	const RenderModules = () => {
 		if (!page) return null
@@ -22,7 +22,8 @@ export const ContentZone:FC<ContentZoneProps> = ({ name, page, sitemapNode, dyna
 				 channelName,
 				 customData: m.customData || null,
 				 isDevelopmentMode,
-				 isPreview
+				 isPreview,
+				 globalData: globalData
 
 			}
 
