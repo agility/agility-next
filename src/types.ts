@@ -143,10 +143,6 @@ export interface ContentZoneProps {
   globalData?: { [name: string]: any };
 }
 
-export interface PageWithCustomData extends Page {
-  customData?: any;
-}
-
 export interface Properties {
   state: number;
   modified: string;
