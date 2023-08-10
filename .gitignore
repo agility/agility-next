@@ -7,3 +7,5 @@ dist/
 *.js
 !src/*.js
 !bin/*.js
+
+.yarn/*

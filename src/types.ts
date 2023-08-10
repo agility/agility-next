@@ -1,6 +1,7 @@
 import { FC, ClassicComponent } from "react";
 import type { GetStaticPropsContext } from "next";
 import { ParsedUrlQuery } from "querystring";
+import { ContentItem, ApiClientInstance, Page } from "@agility/content-fetch";
 
 /**
  * Extension of the GetStaticPropsContext type for Agility CMS.
@@ -38,7 +39,7 @@ export interface AgilityGetStaticPropsContext<
 
 export interface AgilityPageProps {
   sitemapNode?: any;
-  page?: any;
+  page?: Page;
   dynamicPageItem?: any;
   pageTemplateName?: string | null;
   languageCode?: string | null;
@@ -52,25 +53,25 @@ export interface AgilityPageProps {
 
 export interface CustomInitPropsArg {
   item: any;
-  page: any;
-  agility: any;
-  languageCode: any;
-  channelName: any;
+  page: Page;
+  agility: ApiClientInstance;
+  languageCode: string;
+  channelName: string;
   sitemapNode: any;
   dynamicPageItem?: any;
 }
 
 export interface GlobalCustomInitPropsArg {
-  page: any;
-  agility: any;
-  languageCode: any;
-  channelName: any;
+  page: Page;
+  agility: ApiClientInstance;
+  languageCode: string;
+  channelName: string;
   sitemapNode: any;
   dynamicPageItem?: any;
 }
 
 export interface ModuleProps<T> {
-  page: any;
+  page: Page;
   module: ContentItem<T>;
   languageCode: string;
   channelName: string;
@@ -82,7 +83,7 @@ export interface ModuleProps<T> {
 }
 
 export interface DynamicModuleProps<T, D> {
-  page: any;
+  page: Page;
   module: ContentItem<T>;
   languageCode: string;
   channelName: string;
@@ -131,7 +132,7 @@ export interface ComponentWithInit<TInit = {}> extends FC<AgilityPageProps> {
 
 export interface ContentZoneProps {
   name: string;
-  page: any;
+  page: Page;
   sitemapNode: any;
   dynamicPageItem?: any;
   languageCode: string;
@@ -140,6 +141,10 @@ export interface ContentZoneProps {
   isDevelopmentMode: boolean;
   isPreview: boolean;
   globalData?: { [name: string]: any };
+}
+
+export interface PageWithCustomData extends Page {
+  customData?: any;
 }
 
 export interface Properties {
@@ -151,11 +156,9 @@ export interface Properties {
   itemOrder: number;
 }
 
-export interface ContentItem<T> {
-  contentID: number;
-  properties: Properties;
-  fields: T;
-}
+
+export { ContentItem, ApiClientInstance }
+
 
 export interface ImageField {
   label: string;
