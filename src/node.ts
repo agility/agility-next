@@ -5,8 +5,7 @@ import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
 //Agility API stuff
 import { agilityConfig } from "./config";
 import { AgilityPageProps } from "./types";
-import agilityRestAPI from "@agility/content-fetch"; 
-import { Page } from "@agility/content-fetch";
+import { Page, getApi } from "@agility/content-fetch";
 import { ContentZone } from "@agility/content-fetch/dist/types/ContentZone";
 
 const securityKey = agilityConfig.securityKey;
@@ -62,7 +61,7 @@ const getAgilityPageProps = async ({
 		console.log(`AgilityCMS => getAgilityPageProps [${languageCode}] [${path}]`);
 	}
 
-	const agilityRestClient = agilityRestAPI.getApi({
+	const agilityRestClient = getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview
 			? agilityConfig.previewAPIKey
@@ -255,7 +254,7 @@ const getAgilityPaths = async ({
 	if (!locales) locales = agilityConfig.locales;
 
 	// set up rest client
-	const agilityRestClient = agilityRestAPI.getApi({
+	const agilityRestClient = getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
 		isPreview,
@@ -362,7 +361,7 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 
 	//TODO: check to see if this slug starts with a language code, and IF SO we need to use that languageCode...
 
-	const agilityRestClient = agilityRestAPI.getApi({
+	const agilityRestClient = getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
 		isPreview,
