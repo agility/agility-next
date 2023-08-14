@@ -5,7 +5,7 @@ import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
 //Agility API stuff
 import { agilityConfig } from "./config";
 import { AgilityPageProps } from "./types";
-import * as agilityRestAPI from "@agility/content-fetch"; 
+import agilityRestAPI from "@agility/content-fetch"; 
 import { Page } from "@agility/content-fetch";
 import { ContentZone } from "@agility/content-fetch/dist/types/ContentZone";
 
