@@ -5,12 +5,12 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@agility/content-fetch@npm:2.0.0-rc10":
-  version: 2.0.0-rc10
-  resolution: "@agility/content-fetch@npm:2.0.0-rc10"
+"@agility/content-fetch@npm:2.0.0-rc14":
+  version: 2.0.0-rc14
+  resolution: "@agility/content-fetch@npm:2.0.0-rc14"
   dependencies:
     axios: ^0.27.2
-  checksum: 0e588becb26f3f356779fe05510f646d4564d0ffb36a12ee3150e92028e7004fc9345095b2fea39e6ddb87df87f860d4adc73b52d70ceb6b388fc4231a310bfb
+  checksum: 815f711e36c822e0e8dfedb523dc5d7830e8a5b650c345dfe920b2134b8dd425f44789abe84ec07d631dd30a0b07ed1365a88ed92ce1803384c92ba55ca339b6
   languageName: node
   linkType: hard
 
@@ -18,7 +18,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@agility/nextjs@workspace:."
   dependencies:
-    "@agility/content-fetch": 2.0.0-rc10
+    "@agility/content-fetch": 2.0.0-rc14
     "@types/node": ^18.11.9
     "@types/react": 18.0.25
     "@types/react-dom": ^17.0.2
@@ -27,7 +27,7 @@ __metadata:
     ts-loader: ^8.0.18
     typescript: 4.9.3
   peerDependencies:
-    "@agility/content-fetch": 2.0.0-rc10
+    "@agility/content-fetch": 2.0.0-rc14
     next: ^13.0.3
   languageName: unknown
   linkType: soft
