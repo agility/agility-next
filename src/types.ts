@@ -28,17 +28,30 @@ export interface AgilityGetStaticPropsContext<
    * A function that will return the component for a given module.
    * If the component has a getCustomInitialProps method,
    * that method will be called the result added to the customData dictionary available in the module props.
+   * This is OPTIONAL since we don't need it with app router implementations.
    *
    * @param {string} moduleName
    * @returns {(FC | ClassicComponent)}
    * @memberof AgilityGetStaticPropsContext
    */
-  getModule(moduleName: string): ModuleWithInit | null;
+  getModule?: (moduleName: string) => ModuleWithInit | null;
   apiOptions?: ApiOptions;
 }
 
+export interface AgilitySitemapNode {
+  title: string
+  name: string
+  pageID: number
+  menuText: number
+  visible: { menu?: boolean, sitemap?: boolean },
+  path: string
+  redirect: string | null
+  isFolder: false,
+  contentID?: number
+}
+
 export interface AgilityPageProps {
-  sitemapNode?: any;
+  sitemapNode: AgilitySitemapNode;
   page?: Page;
   dynamicPageItem?: any;
   pageTemplateName?: string | null;
@@ -57,7 +70,7 @@ export interface CustomInitPropsArg {
   agility: ApiClientInstance;
   languageCode: string;
   channelName: string;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: any;
 }
 
@@ -66,7 +79,7 @@ export interface GlobalCustomInitPropsArg {
   agility: ApiClientInstance;
   languageCode: string;
   channelName: string;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: any;
 }
 
@@ -75,7 +88,7 @@ export interface ModuleProps<T> {
   module: ContentItem<T>;
   languageCode: string;
   channelName: string;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: ContentItem<any>;
   isDevelopmentMode: boolean;
   isPreview: boolean;
@@ -87,7 +100,7 @@ export interface DynamicModuleProps<T, D> {
   module: ContentItem<T>;
   languageCode: string;
   channelName: string;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: ContentItem<D>;
   globalData?: { [name: string]: any };
 }
@@ -96,10 +109,10 @@ export interface CustomInitProps<T, C> extends ModuleProps<T> {
   customData: C;
 }
 
-export interface Module<TContent> extends FC<ModuleProps<TContent>> {}
+export interface Module<TContent> extends FC<ModuleProps<TContent>> { }
 
 export interface ModuleWithDynamic<TContent, TDynamicPageItem>
-  extends FC<DynamicModuleProps<TContent, TDynamicPageItem>> {}
+  extends FC<DynamicModuleProps<TContent, TDynamicPageItem>> { }
 
 
 
@@ -133,7 +146,7 @@ export interface ComponentWithInit<TInit = {}> extends FC<AgilityPageProps> {
 export interface ContentZoneProps {
   name: string;
   page: Page;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: any;
   languageCode: string;
   channelName: string;

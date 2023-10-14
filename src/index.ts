@@ -1,5 +1,7 @@
 export * from "./types"
+export * from "./config"
 export * from "./ContentZone"
 export * from "./AgilityImage"
+export * from "./AgilityPic"
 export * from "./browser"
 export * from "./utils"

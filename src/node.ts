@@ -1,6 +1,6 @@
 import { asyncForEach } from "./utils";
 
-import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
+import { AgilityGetStaticPropsContext, AgilitySitemapNode, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig } from "./config";
@@ -85,7 +85,7 @@ const getAgilityPageProps = async ({
 		console.warn(`AgilityCMS => No sitemap found on sitemap channel '${channelName}.'`);
 	}
 
-	let pageInSitemap = null;
+	let pageInSitemap: AgilitySitemapNode | null = null;
 	let page: Page;
 	let dynamicPageItem: any = null;
 
@@ -182,7 +182,7 @@ const getAgilityPageProps = async ({
 				modulesForThisContentZone,
 				async (moduleItem: { module: string; item: any; customData: any }) => {
 					//find the react component to use for the module
-					const moduleComponent = getModule(moduleItem.module);
+					const moduleComponent = getModule ? getModule(moduleItem.module) : null
 
 					if (moduleComponent && moduleComponent.getCustomInitialProps) {
 						//resolve any additional data for the modules
