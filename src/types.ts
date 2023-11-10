@@ -95,10 +95,10 @@ export interface CustomInitProps<T, C> extends ModuleProps<T> {
   customData: C;
 }
 
-export interface Module<TContent> extends FC<ModuleProps<TContent>> {}
+export interface Module<TContent> extends FC<ModuleProps<TContent>> { }
 
 export interface ModuleWithDynamic<TContent, TDynamicPageItem>
-  extends FC<DynamicModuleProps<TContent, TDynamicPageItem>> {}
+  extends FC<DynamicModuleProps<TContent, TDynamicPageItem>> { }
 
 
 
@@ -136,7 +136,7 @@ export interface ContentZoneProps {
   dynamicPageItem?: any;
   languageCode: string;
   channelName: string;
-  getModule(moduleName: string): ModuleWithInit | null;
+  getModule(moduleName: string): any;
   isDevelopmentMode: boolean;
   isPreview: boolean;
   globalData?: { [name: string]: any };

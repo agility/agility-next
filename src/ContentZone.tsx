@@ -20,8 +20,9 @@ export const ContentZone: FC<ContentZoneProps> = ({
 	return (
 		<>
 			{modules.map((m) => {
-				const AgilityModule = getModule(m.moduleName)
+				const moduleName = m.moduleName ?? m.module ?? m.item.properties.definitionName
 
+				let AgilityModule = null
 				let props = {
 					page,
 					sitemapNode,
@@ -33,6 +34,10 @@ export const ContentZone: FC<ContentZoneProps> = ({
 					isDevelopmentMode,
 					isPreview,
 					globalData: globalData,
+				}
+
+				if (moduleName) {
+					AgilityModule = getModule(moduleName)
 				}
 
 				if (AgilityModule) {

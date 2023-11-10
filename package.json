@@ -1,6 +1,6 @@
 {
 	"name": "@agility/nextjs",
-	"version": "13.0.4",
+	"version": "14.0.0",
 	"description": "Agility CMS support for NextJS 13+ and Next Image",
 	"repository": {
 		"type": "git",
@@ -36,14 +36,14 @@
 	"license": "MIT",
 	"peerDependencies": {
 		"@agility/content-fetch": "^1.1.1",
-		"next": "^13.0.3"
+		"next": "^14.0.1"
 	},
 	"devDependencies": {
 		"@agility/content-fetch": "^1.1.5",
 		"@types/node": "^18.11.9",
 		"@types/react": "18.0.25",
 		"@types/react-dom": "^17.0.2",
-		"next": "^13.0.3",
+		"next": "^14.0.1",
 		"react": "18.2.0",
 		"ts-loader": "^8.0.18",
 		"typescript": "4.9.3"

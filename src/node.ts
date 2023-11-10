@@ -176,6 +176,9 @@ const getAgilityPageProps = async ({
 			//grab the modules for this content zone
 			const modulesForThisContentZone = page.zones[zoneName];
 
+			//only proceeed if we have a getModule function to execute
+			if (!getModule) return
+
 			//loop through the zone's modules
 			await asyncForEach(
 				modulesForThisContentZone,

@@ -1,6 +1,9 @@
 # Dependency directories
 node_modules/
 
+# yarn cache
+.yarn/
+
 dist/
 
 *.d.ts
