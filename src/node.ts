@@ -13,6 +13,9 @@ const securityKey = agilityConfig.securityKey;
 const channelName = agilityConfig.channelName;
 
 const isDevelopmentMode = process.env.NODE_ENV === "development";
+let cacheDuration = agilityConfig.defaultCacheDuration
+
+
 
 const getAgilityPageProps = async ({
 	params,
@@ -71,18 +74,24 @@ const getAgilityPageProps = async ({
 		debug: agilityConfig.debug,
 	});
 
-	//get sitemap
-	let sitemap = await agilityRestClient.getSitemapFlat({
-		channelName,
-		languageCode,
-	});
+
+	//set the cache options for this page
+	agilityRestClient.config.fetchConfig = {
+		next: {
+			tags: [`agility-sitemap-flat-${languageCode}`],
+			revalidate: cacheDuration
+		}
+	}
+
+	//get the cached sitemap
+	const sitemap = await agilityRestClient.getSitemapFlat({ channelName, languageCode });
 
 	if (apiOptions && apiOptions.onSitemapRetrieved) {
 		apiOptions.onSitemapRetrieved({ sitemap, isPreview, isDevelopmentMode });
 	}
 
 	if (sitemap === null) {
-		console.warn(`AgilityCMS => No sitemap found on sitemap channel '${channelName}.'`);
+		console.warn(`AgilityCMS => No sitemap found on channel '${channelName}.'`);
 	}
 
 	let pageInSitemap: AgilitySitemapNode | null = null;
@@ -101,13 +110,23 @@ const getAgilityPageProps = async ({
 	let notFound = false;
 
 	if (pageInSitemap) {
+
+		const pageID = pageInSitemap.pageID
+		const contentLinkDepth = apiOptions.contentLinkDepth
+		const expandAllContentLinks = apiOptions.expandAllContentLinks
+
+		//set the cache options for this page
+		agilityRestClient.config.fetchConfig = {
+			next: {
+				tags: [`agility-page-${pageID}-${languageCode}`],
+				revalidate: cacheDuration
+			}
+		}
+
 		//get the page
-		page = await agilityRestClient.getPage({
-			pageID: pageInSitemap.pageID,
-			languageCode: languageCode,
-			contentLinkDepth: apiOptions.contentLinkDepth,
-			expandAllContentLinks: apiOptions.expandAllContentLinks,
-		});
+		page = await agilityRestClient.getPage({ pageID, languageCode, contentLinkDepth, expandAllContentLinks })
+
+
 
 	} else {
 		//Could not find page
@@ -395,5 +414,5 @@ export {
 	getAgilityPaths,
 	validatePreview,
 	generatePreviewKey,
-	getDynamicPageURL,
-};
+	getDynamicPageURL
+}

@@ -60,6 +60,7 @@ export const AgilityPic: FC<AgilityPicProps> = ({image, alt, priority, className
 				let srcSet = image.url
 				let w = Number(source.width) > 0 ? `&w=${source.width}` : ``
 				let h = Number(source.height) > 0 ? `&h=${source.height}` : ``
+				const key = `${srcSet}-${index}`
 
 				if (h || w) {
 					//if we have a width and NOT a height, do NOT allow the image to be sized larger than the original width
@@ -72,7 +73,7 @@ export const AgilityPic: FC<AgilityPicProps> = ({image, alt, priority, className
 					srcSet = `${image.url}?format=auto${w}${h}`
 				}
 
-				return <source key={`${srcSet}-${index}`} {...source} srcSet={srcSet} />
+				return <source key={key} {...source} srcSet={srcSet} />
 			})}
 
 			<img loading={priority ? "eager" : "lazy"} src={src} alt={alt || image.label} className={className} />

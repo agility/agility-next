@@ -1,4 +1,5 @@
 import React, {FC} from "react"
+import {ContentItem, ContentReference} from "@agility/content-fetch"
 import {ContentZoneProps} from "./types"
 
 export const ContentZone: FC<ContentZoneProps> = ({
@@ -20,8 +21,9 @@ export const ContentZone: FC<ContentZoneProps> = ({
 	return (
 		<>
 			{modules.map((m) => {
+				let contentItemOrReference = m.item as any
 
-				const moduleName = m.module ?? m.item.properties.definitionName
+				const moduleName = m.module ?? contentItemOrReference.properties?.definitionName
 
 				let AgilityModule = null
 				let props = {
@@ -42,7 +44,7 @@ export const ContentZone: FC<ContentZoneProps> = ({
 				}
 
 				if (AgilityModule) {
-					return <AgilityModule key={m.item.contentID} {...props} />
+					return <AgilityModule key={contentItemOrReference.contentID || contentItemOrReference.contentid} {...props} />
 				} else {
 					if (isPreview || isDevelopmentMode) {
 						return (

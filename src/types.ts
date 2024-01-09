@@ -3,6 +3,8 @@ import type { GetStaticPropsContext } from "next";
 import { ParsedUrlQuery } from "querystring";
 import { ContentItem, ApiClientInstance, Page } from "@agility/content-fetch";
 
+
+
 /**
  * Extension of the GetStaticPropsContext type for Agility CMS.
  * Adds the globalComponents array and getter methods for modules and page templates.
@@ -95,6 +97,18 @@ export interface ModuleProps<T> {
   globalData?: { [name: string]: any };
 }
 
+export interface UnloadedModuleProps {
+  page: Page;
+  module: { contentid: number };
+  languageCode: string;
+  channelName: string;
+  sitemapNode: AgilitySitemapNode;
+  dynamicPageItem?: ContentItem<any>;
+  isDevelopmentMode: boolean;
+  isPreview: boolean;
+  globalData?: { [name: string]: any };
+}
+
 export interface DynamicModuleProps<T, D> {
   page: Page;
   module: ContentItem<T>;
@@ -108,6 +122,10 @@ export interface DynamicModuleProps<T, D> {
 export interface CustomInitProps<T, C> extends ModuleProps<T> {
   customData: C;
 }
+
+
+
+export interface UnloadedModule extends FC<UnloadedModuleProps> { }
 
 export interface Module<TContent> extends FC<ModuleProps<TContent>> { }
 
@@ -185,7 +203,7 @@ export interface URLField {
 }
 
 export interface ApiOptions {
-  onSitemapRetrieved: Function;
-  expandAllContentLinks: boolean;
-  contentLinkDepth: number;
+  onSitemapRetrieved?: Function;
+  expandAllContentLinks?: boolean;
+  contentLinkDepth?: number;
 }
