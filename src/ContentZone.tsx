@@ -20,7 +20,8 @@ export const ContentZone: FC<ContentZoneProps> = ({
 	return (
 		<>
 			{modules.map((m) => {
-				const moduleName = m.moduleName ?? m.module ?? m.item.properties.definitionName
+
+				const moduleName = m.module ?? m.item.properties.definitionName
 
 				let AgilityModule = null
 				let props = {
@@ -48,14 +49,14 @@ export const ContentZone: FC<ContentZoneProps> = ({
 							<div>
 								The component for{" "}
 								<em>
-									<strong>{m.moduleName}</strong>
+									<strong>{m.module}</strong>
 								</em>{" "}
 								was not found in the Agility Modules list.
 							</div>
 						)
 					}
 
-					throw new Error(`Component for ${m.moduleName} was not found in the Agility Modules list.`)
+					throw new Error(`Component for ${m.module} was not found in the Agility Modules list.`)
 				}
 			})}
 		</>

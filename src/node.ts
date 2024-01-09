@@ -1,11 +1,13 @@
 import { asyncForEach } from "./utils";
 
-import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
+import { AgilityGetStaticPropsContext, AgilitySitemapNode, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig } from "./config";
 import { AgilityPageProps } from "./types";
-import agilityRestAPI from "@agility/content-fetch";
+import * as agilityRestAPI from "@agility/content-fetch";
+import { Page } from "@agility/content-fetch";
+import { ContentZone } from "@agility/content-fetch/dist/types/ContentZone";
 
 const securityKey = agilityConfig.securityKey;
 const channelName = agilityConfig.channelName;
@@ -53,7 +55,6 @@ const getAgilityPageProps = async ({
 		}
 	}
 
-	let agilityRestClient = null;
 	let isPreview: boolean = preview || isDevelopmentMode;
 	let isDebugMode = agilityConfig.debug || isDevelopmentMode
 
@@ -61,7 +62,7 @@ const getAgilityPageProps = async ({
 		console.log(`AgilityCMS => getAgilityPageProps [${languageCode}] [${path}]`);
 	}
 
-	agilityRestClient = agilityRestAPI.getApi({
+	const agilityRestClient = agilityRestAPI.getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview
 			? agilityConfig.previewAPIKey
@@ -84,8 +85,8 @@ const getAgilityPageProps = async ({
 		console.warn(`AgilityCMS => No sitemap found on sitemap channel '${channelName}.'`);
 	}
 
-	let pageInSitemap = null;
-	let page: any = null;
+	let pageInSitemap: AgilitySitemapNode | null = null;
+	let page: Page;
 	let dynamicPageItem: any = null;
 
 	if (path === "/") {
@@ -171,7 +172,7 @@ const getAgilityPageProps = async ({
 
 		//resolve the modules per content zone
 		await asyncForEach(Object.keys(page.zones), async (zoneName: string) => {
-			let modules: { moduleName: string; item: any; customData: any }[] = [];
+			let modules: ContentZone[] = [];
 
 			//grab the modules for this content zone
 			const modulesForThisContentZone = page.zones[zoneName];
@@ -184,7 +185,7 @@ const getAgilityPageProps = async ({
 				modulesForThisContentZone,
 				async (moduleItem: { module: string; item: any; customData: any }) => {
 					//find the react component to use for the module
-					const moduleComponent = getModule(moduleItem.module);
+					const moduleComponent = getModule ? getModule(moduleItem.module) : null
 
 					if (moduleComponent && moduleComponent.getCustomInitialProps) {
 						//resolve any additional data for the modules
@@ -219,7 +220,7 @@ const getAgilityPageProps = async ({
 					}
 
 					modules.push({
-						moduleName: moduleItem.module,
+						module: moduleItem.module,
 						item: moduleItem.item,
 						customData: moduleItem.customData || null,
 					});

@@ -1,6 +1,7 @@
 import { FC, ClassicComponent } from "react";
 import type { GetStaticPropsContext } from "next";
 import { ParsedUrlQuery } from "querystring";
+import { ContentItem, ApiClientInstance, Page } from "@agility/content-fetch";
 
 /**
  * Extension of the GetStaticPropsContext type for Agility CMS.
@@ -27,18 +28,31 @@ export interface AgilityGetStaticPropsContext<
    * A function that will return the component for a given module.
    * If the component has a getCustomInitialProps method,
    * that method will be called the result added to the customData dictionary available in the module props.
+   * This is OPTIONAL since we don't need it with app router implementations.
    *
    * @param {string} moduleName
    * @returns {(FC | ClassicComponent)}
    * @memberof AgilityGetStaticPropsContext
    */
-  getModule(moduleName: string): ModuleWithInit | null;
+  getModule?: (moduleName: string) => ModuleWithInit | null;
   apiOptions?: ApiOptions;
 }
 
+export interface AgilitySitemapNode {
+  title: string
+  name: string
+  pageID: number
+  menuText: number
+  visible: { menu?: boolean, sitemap?: boolean },
+  path: string
+  redirect: string | null
+  isFolder: false,
+  contentID?: number
+}
+
 export interface AgilityPageProps {
-  sitemapNode?: any;
-  page?: any;
+  sitemapNode: AgilitySitemapNode;
+  page?: Page;
   dynamicPageItem?: any;
   pageTemplateName?: string | null;
   languageCode?: string | null;
@@ -52,29 +66,29 @@ export interface AgilityPageProps {
 
 export interface CustomInitPropsArg {
   item: any;
-  page: any;
-  agility: any;
-  languageCode: any;
-  channelName: any;
-  sitemapNode: any;
+  page: Page;
+  agility: ApiClientInstance;
+  languageCode: string;
+  channelName: string;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: any;
 }
 
 export interface GlobalCustomInitPropsArg {
-  page: any;
-  agility: any;
-  languageCode: any;
-  channelName: any;
-  sitemapNode: any;
+  page: Page;
+  agility: ApiClientInstance;
+  languageCode: string;
+  channelName: string;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: any;
 }
 
 export interface ModuleProps<T> {
-  page: any;
+  page: Page;
   module: ContentItem<T>;
   languageCode: string;
   channelName: string;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: ContentItem<any>;
   isDevelopmentMode: boolean;
   isPreview: boolean;
@@ -82,11 +96,11 @@ export interface ModuleProps<T> {
 }
 
 export interface DynamicModuleProps<T, D> {
-  page: any;
+  page: Page;
   module: ContentItem<T>;
   languageCode: string;
   channelName: string;
-  sitemapNode: any;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: ContentItem<D>;
   globalData?: { [name: string]: any };
 }
@@ -131,8 +145,8 @@ export interface ComponentWithInit<TInit = {}> extends FC<AgilityPageProps> {
 
 export interface ContentZoneProps {
   name: string;
-  page: any;
-  sitemapNode: any;
+  page: Page;
+  sitemapNode: AgilitySitemapNode;
   dynamicPageItem?: any;
   languageCode: string;
   channelName: string;
@@ -151,11 +165,9 @@ export interface Properties {
   itemOrder: number;
 }
 
-export interface ContentItem<T> {
-  contentID: number;
-  properties: Properties;
-  fields: T;
-}
+
+export { ContentItem, ApiClientInstance }
+
 
 export interface ImageField {
   label: string;
