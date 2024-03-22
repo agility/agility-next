@@ -1,9 +1,14 @@
 # Dependency directories
 node_modules/
 
+# yarn cache
+.yarn/
+
 dist/
 
 *.d.ts
 *.js
 !src/*.js
 !bin/*.js
+
+.yarn/*

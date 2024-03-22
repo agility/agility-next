@@ -1,16 +1,21 @@
 import { asyncForEach } from "./utils";
 
-import { AgilityGetStaticPropsContext, ModuleWithInit } from "./types";
+import { AgilityGetStaticPropsContext, AgilitySitemapNode, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig } from "./config";
 import { AgilityPageProps } from "./types";
-import agilityRestAPI from "@agility/content-fetch";
+import * as agilityRestAPI from "@agility/content-fetch";
+import { Page } from "@agility/content-fetch";
+import { ContentZone } from "@agility/content-fetch/dist/types/ContentZone";
 
 const securityKey = agilityConfig.securityKey;
 const channelName = agilityConfig.channelName;
 
 const isDevelopmentMode = process.env.NODE_ENV === "development";
+let cacheDuration = agilityConfig.defaultCacheDuration
+
+
 
 const getAgilityPageProps = async ({
 	params,
@@ -53,7 +58,6 @@ const getAgilityPageProps = async ({
 		}
 	}
 
-	let agilityRestClient = null;
 	let isPreview: boolean = preview || isDevelopmentMode;
 	let isDebugMode = agilityConfig.debug || isDevelopmentMode
 
@@ -61,7 +65,7 @@ const getAgilityPageProps = async ({
 		console.log(`AgilityCMS => getAgilityPageProps [${languageCode}] [${path}]`);
 	}
 
-	agilityRestClient = agilityRestAPI.getApi({
+	const agilityRestClient = agilityRestAPI.getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview
 			? agilityConfig.previewAPIKey
@@ -70,22 +74,35 @@ const getAgilityPageProps = async ({
 		debug: agilityConfig.debug,
 	});
 
-	//get sitemap
-	let sitemap = await agilityRestClient.getSitemapFlat({
-		channelName,
-		languageCode,
-	});
+
+	//set the cache options for this page
+	if (cacheDuration > 0) {
+		agilityRestClient.config.fetchConfig = {
+			next: {
+				tags: [`agility-sitemap-flat-${languageCode}`],
+				revalidate: cacheDuration
+			}
+		}
+	} else {
+		agilityRestClient.config.fetchConfig = {
+			cache: "no-store"
+		}
+	}
+
+
+	//get the cached sitemap
+	const sitemap = await agilityRestClient.getSitemapFlat({ channelName, languageCode });
 
 	if (apiOptions && apiOptions.onSitemapRetrieved) {
 		apiOptions.onSitemapRetrieved({ sitemap, isPreview, isDevelopmentMode });
 	}
 
 	if (sitemap === null) {
-		console.warn(`AgilityCMS => No sitemap found on sitemap channel '${channelName}.'`);
+		console.warn(`AgilityCMS => No sitemap found on channel '${channelName}.'`);
 	}
 
-	let pageInSitemap = null;
-	let page: any = null;
+	let pageInSitemap: AgilitySitemapNode | null = null;
+	let page: Page;
 	let dynamicPageItem: any = null;
 
 	if (path === "/") {
@@ -100,13 +117,29 @@ const getAgilityPageProps = async ({
 	let notFound = false;
 
 	if (pageInSitemap) {
+
+		const pageID = pageInSitemap.pageID
+		const contentLinkDepth = apiOptions.contentLinkDepth
+		const expandAllContentLinks = apiOptions.expandAllContentLinks
+
+		//set the cache options for this page
+		if (cacheDuration > 0) {
+			agilityRestClient.config.fetchConfig = {
+				next: {
+					tags: [`agility-page-${pageID}-${languageCode}`],
+					revalidate: cacheDuration
+				}
+			}
+		} else {
+			agilityRestClient.config.fetchConfig = {
+				cache: "no-store"
+			}
+		}
+
 		//get the page
-		page = await agilityRestClient.getPage({
-			pageID: pageInSitemap.pageID,
-			languageCode: languageCode,
-			contentLinkDepth: apiOptions.contentLinkDepth,
-			expandAllContentLinks: apiOptions.expandAllContentLinks,
-		});
+		page = await agilityRestClient.getPage({ pageID, languageCode, contentLinkDepth, expandAllContentLinks })
+
+
 
 	} else {
 		//Could not find page
@@ -171,17 +204,20 @@ const getAgilityPageProps = async ({
 
 		//resolve the modules per content zone
 		await asyncForEach(Object.keys(page.zones), async (zoneName: string) => {
-			let modules: { moduleName: string; item: any; customData: any }[] = [];
+			let modules: ContentZone[] = [];
 
 			//grab the modules for this content zone
 			const modulesForThisContentZone = page.zones[zoneName];
+
+			//only proceeed if we have a getModule function to execute
+			if (!getModule) return
 
 			//loop through the zone's modules
 			await asyncForEach(
 				modulesForThisContentZone,
 				async (moduleItem: { module: string; item: any; customData: any }) => {
 					//find the react component to use for the module
-					const moduleComponent = getModule(moduleItem.module);
+					const moduleComponent = getModule ? getModule(moduleItem.module) : null
 
 					if (moduleComponent && moduleComponent.getCustomInitialProps) {
 						//resolve any additional data for the modules
@@ -216,7 +252,7 @@ const getAgilityPageProps = async ({
 					}
 
 					modules.push({
-						moduleName: moduleItem.module,
+						module: moduleItem.module,
 						item: moduleItem.item,
 						customData: moduleItem.customData || null,
 					});
@@ -263,8 +299,25 @@ const getAgilityPaths = async ({
 
 	let paths: string[] = [];
 
+
+
 	for (let i = 0; i < locales.length; i++) {
 		const languageCode = locales[i].toLowerCase();
+
+
+		//set the cache options for this page
+		if (cacheDuration > 0) {
+			agilityRestClient.config.fetchConfig = {
+				next: {
+					tags: [`agility-sitemap-flat-${languageCode}`],
+					revalidate: cacheDuration
+				}
+			}
+		} else {
+			agilityRestClient.config.fetchConfig = {
+				cache: "no-store"
+			}
+		}
 
 		console.log("AgilityCMS => `getAgilityPaths` *** USING REST API ***");
 		let sitemapFlat = await agilityRestClient.getSitemapFlat({
@@ -361,12 +414,28 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 
 	//TODO: check to see if this slug starts with a language code, and IF SO we need to use that languageCode...
 
+
 	const agilityRestClient = agilityRestAPI.getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
 		isPreview,
 		debug: agilityConfig.debug,
 	});
+
+
+	//set the cache options for this page
+	if (cacheDuration > 0) {
+		agilityRestClient.config.fetchConfig = {
+			next: {
+				tags: [`agility-sitemap-flat-${languageCode}`],
+				revalidate: cacheDuration
+			}
+		}
+	} else {
+		agilityRestClient.config.fetchConfig = {
+			cache: "no-store"
+		}
+	}
 
 	const sitemapFlat = await agilityRestClient.getSitemapFlat({
 		channelName,
@@ -391,5 +460,5 @@ export {
 	getAgilityPaths,
 	validatePreview,
 	generatePreviewKey,
-	getDynamicPageURL,
-};
+	getDynamicPageURL
+}

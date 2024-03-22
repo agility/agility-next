@@ -1,4 +1,5 @@
 import React, {FC} from "react"
+import {ContentItem, ContentReference} from "@agility/content-fetch"
 import {ContentZoneProps} from "./types"
 
 export const ContentZone: FC<ContentZoneProps> = ({
@@ -20,8 +21,11 @@ export const ContentZone: FC<ContentZoneProps> = ({
 	return (
 		<>
 			{modules.map((m) => {
-				const AgilityModule = getModule(m.moduleName)
+				let contentItemOrReference = m.item as any
 
+				const moduleName = m.module ?? contentItemOrReference.properties?.definitionName
+
+				let AgilityModule = null
 				let props = {
 					page,
 					sitemapNode,
@@ -35,22 +39,26 @@ export const ContentZone: FC<ContentZoneProps> = ({
 					globalData: globalData,
 				}
 
+				if (moduleName) {
+					AgilityModule = getModule(moduleName)
+				}
+
 				if (AgilityModule) {
-					return <AgilityModule key={m.item.contentID} {...props} />
+					return <AgilityModule key={contentItemOrReference.contentID || contentItemOrReference.contentid} {...props} />
 				} else {
 					if (isPreview || isDevelopmentMode) {
 						return (
 							<div>
 								The component for{" "}
 								<em>
-									<strong>{m.moduleName}</strong>
+									<strong>{m.module}</strong>
 								</em>{" "}
 								was not found in the Agility Modules list.
 							</div>
 						)
 					}
 
-					throw new Error(`Component for ${m.moduleName} was not found in the Agility Modules list.`)
+					throw new Error(`Component for ${m.module} was not found in the Agility Modules list.`)
 				}
 			})}
 		</>

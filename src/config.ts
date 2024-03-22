@@ -7,6 +7,7 @@ export let agilityConfig = {
   channelName: process.env.AGILITY_SITEMAP || "website", //the name of your channel in Agility CMS
   securityKey: process.env.AGILITY_SECURITY_KEY, //the website security key used to validate and generate preview keys
   debug: process.env.AGILITY_DEBUG === "true" ? true : false,
+  defaultCacheDuration: process.env.AGILITY_FETCH_CACHE_DURATION ? parseInt(process.env.AGILITY_FETCH_CACHE_DURATION) : 60, //the default cache duration in seconds for agility content
 };
 
 
