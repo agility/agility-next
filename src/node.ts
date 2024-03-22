@@ -76,12 +76,19 @@ const getAgilityPageProps = async ({
 
 
 	//set the cache options for this page
-	agilityRestClient.config.fetchConfig = {
-		next: {
-			tags: [`agility-sitemap-flat-${languageCode}`],
-			revalidate: cacheDuration
+	if (cacheDuration > 0) {
+		agilityRestClient.config.fetchConfig = {
+			next: {
+				tags: [`agility-sitemap-flat-${languageCode}`],
+				revalidate: cacheDuration
+			}
+		}
+	} else {
+		agilityRestClient.config.fetchConfig = {
+			cache: "no-store"
 		}
 	}
+
 
 	//get the cached sitemap
 	const sitemap = await agilityRestClient.getSitemapFlat({ channelName, languageCode });
@@ -116,10 +123,16 @@ const getAgilityPageProps = async ({
 		const expandAllContentLinks = apiOptions.expandAllContentLinks
 
 		//set the cache options for this page
-		agilityRestClient.config.fetchConfig = {
-			next: {
-				tags: [`agility-page-${pageID}-${languageCode}`],
-				revalidate: cacheDuration
+		if (cacheDuration > 0) {
+			agilityRestClient.config.fetchConfig = {
+				next: {
+					tags: [`agility-page-${pageID}-${languageCode}`],
+					revalidate: cacheDuration
+				}
+			}
+		} else {
+			agilityRestClient.config.fetchConfig = {
+				cache: "no-store"
 			}
 		}
 
@@ -286,8 +299,25 @@ const getAgilityPaths = async ({
 
 	let paths: string[] = [];
 
+
+
 	for (let i = 0; i < locales.length; i++) {
 		const languageCode = locales[i].toLowerCase();
+
+
+		//set the cache options for this page
+		if (cacheDuration > 0) {
+			agilityRestClient.config.fetchConfig = {
+				next: {
+					tags: [`agility-sitemap-flat-${languageCode}`],
+					revalidate: cacheDuration
+				}
+			}
+		} else {
+			agilityRestClient.config.fetchConfig = {
+				cache: "no-store"
+			}
+		}
 
 		console.log("AgilityCMS => `getAgilityPaths` *** USING REST API ***");
 		let sitemapFlat = await agilityRestClient.getSitemapFlat({
@@ -384,12 +414,28 @@ const getDynamicPageURL = async ({ contentID, preview, slug }) => {
 
 	//TODO: check to see if this slug starts with a language code, and IF SO we need to use that languageCode...
 
+
 	const agilityRestClient = agilityRestAPI.getApi({
 		guid: agilityConfig.guid,
 		apiKey: isPreview ? agilityConfig.previewAPIKey : agilityConfig.fetchAPIKey,
 		isPreview,
 		debug: agilityConfig.debug,
 	});
+
+
+	//set the cache options for this page
+	if (cacheDuration > 0) {
+		agilityRestClient.config.fetchConfig = {
+			next: {
+				tags: [`agility-sitemap-flat-${languageCode}`],
+				revalidate: cacheDuration
+			}
+		}
+	} else {
+		agilityRestClient.config.fetchConfig = {
+			cache: "no-store"
+		}
+	}
 
 	const sitemapFlat = await agilityRestClient.getSitemapFlat({
 		channelName,
