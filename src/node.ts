@@ -1,6 +1,6 @@
 import { asyncForEach } from "./utils";
 
-import { AgilityGetStaticPropsContext, AgilitySitemapNode, ModuleWithInit } from "./types";
+import { AgilityGetStaticPropsContext, AgilitySitemapNode, IGetDynamicPageURLProps, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig } from "./config";
@@ -404,13 +404,21 @@ const generatePreviewKey = () => {
 	return previewKey;
 };
 
-const getDynamicPageURL = async ({ contentID, preview, slug }) => {
+const getDynamicPageURL = async ({ contentID, preview, slug, locale }: IGetDynamicPageURLProps) => {
 	console.log(`Agility CMS => Retrieving Dynamic Page URL by ContentID...`);
 
 	//determine if we are in preview mode
 	const isPreview = preview || isDevelopmentMode;
 
-	const languageCode = agilityConfig.locales[0];
+	const defaultLocale = agilityConfig.locales[0];
+
+	// Use locale param if provided, otherwise use default locale
+	let languageCode = (!locale) ?  defaultLocale : agilityConfig.locales.find(l => l.toLowerCase() === locale.toLowerCase());
+
+	if (!languageCode) {
+		console.warn(`AgilityCMS => Locale ${locale} not found in locales array.`);
+		languageCode = defaultLocale;
+	}
 
 	//TODO: check to see if this slug starts with a language code, and IF SO we need to use that languageCode...
 
