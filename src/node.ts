@@ -1,6 +1,6 @@
 import { asyncForEach } from "./utils";
 
-import { AgilityGetStaticPropsContext, AgilitySitemapNode, ModuleWithInit } from "./types";
+import { AgilityGetStaticPropsContext, AgilitySitemapNode, IGetDynamicPageURLProps, ModuleWithInit } from "./types";
 
 //Agility API stuff
 import { agilityConfig } from "./config";
@@ -404,12 +404,7 @@ const generatePreviewKey = () => {
 	return previewKey;
 };
 
-const getDynamicPageURL = async ({ contentID, preview, slug, locale }:{
-	contentID: number,
-	preview?: boolean,
-	slug?: string,
-	locale?: string
-}) => {
+const getDynamicPageURL = async ({ contentID, preview, slug, locale }: IGetDynamicPageURLProps) => {
 	console.log(`Agility CMS => Retrieving Dynamic Page URL by ContentID...`);
 
 	//determine if we are in preview mode
