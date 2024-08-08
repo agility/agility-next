@@ -93,28 +93,35 @@ const getAgilityPageProps = async ({
 	//get the cached sitemap
 	const sitemap = await agilityRestClient.getSitemapFlat({ channelName, languageCode });
 
-	if (apiOptions && apiOptions.onSitemapRetrieved) {
-		apiOptions.onSitemapRetrieved({ sitemap, isPreview, isDevelopmentMode });
+
+	let notFound = false;
+
+	if (!sitemap) {
+		//no sitemap!
+		console.warn(`AgilityCMS => WARNING: No sitemap found for '${channelName}.'`);
+		notFound = true;
+
 	}
 
-	if (sitemap === null) {
-		console.warn(`AgilityCMS => No sitemap found on channel '${channelName}.'`);
+	if (apiOptions && apiOptions.onSitemapRetrieved) {
+		apiOptions.onSitemapRetrieved({ sitemap, isPreview, isDevelopmentMode });
 	}
 
 	let pageInSitemap: AgilitySitemapNode | null = null;
 	let page: Page;
 	let dynamicPageItem: any = null;
 
-	if (path === "/") {
-		//home page
-		let firstPagePathInSitemap = Object.keys(sitemap)[0];
-		pageInSitemap = sitemap[firstPagePathInSitemap];
-	} else {
-		//all other pages
-		pageInSitemap = sitemap[path];
+	if (sitemap) {
+		if (path === "/") {
+			//home page
+			let firstPagePathInSitemap = Object.keys(sitemap)[0];
+			pageInSitemap = sitemap[firstPagePathInSitemap];
+		} else {
+			//all other pages
+			pageInSitemap = sitemap[path];
+		}
 	}
 
-	let notFound = false;
 
 	if (pageInSitemap) {
 
@@ -413,7 +420,7 @@ const getDynamicPageURL = async ({ contentID, preview, slug, locale }: IGetDynam
 	const defaultLocale = agilityConfig.locales[0];
 
 	// Use locale param if provided, otherwise use default locale
-	let languageCode = (!locale) ?  defaultLocale : agilityConfig.locales.find(l => l.toLowerCase() === locale.toLowerCase());
+	let languageCode = (!locale) ? defaultLocale : agilityConfig.locales.find(l => l.toLowerCase() === locale.toLowerCase());
 
 	if (!languageCode) {
 		console.warn(`AgilityCMS => Locale ${locale} not found in locales array.`);

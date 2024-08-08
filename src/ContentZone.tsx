@@ -17,6 +17,10 @@ export const ContentZone: FC<ContentZoneProps> = ({
 	if (!page) return null
 
 	const modules = page.zones[name]
+	if (!modules) {
+		console.warn(`Agility CMS => WARNING: No modules found for zone called '${name}'`)
+		return null
+	}
 
 	return (
 		<>
