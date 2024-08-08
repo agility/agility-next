@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@agility/content-fetch@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@agility/content-fetch/-/content-fetch-2.0.0.tgz#57a3e93ea0927284be582fc6382251385ab9ad95"
-  integrity sha512-ghqdv/IozVASwPgZThZrmufbo8q5a5UMOMOyy9CCSS8BVx5r+QxjRLTEXQOp7xpoJO1vhe3QUkOmCppssBf3Eg==
+"@agility/content-fetch@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@agility/content-fetch/-/content-fetch-2.0.2.tgz#08a0d2b320e7e9b65cf3c5c2b45342d9956ac226"
+  integrity sha512-QS/ky9nvRqwabliaZVVcTVEPOgRAQqbxbBQuGOuLZN6R30JuM8nnCnDPfO5ePKura5621afLCXBlfFssr9sWDA==
 
 "@next/env@14.0.1":
   version "14.0.1"
