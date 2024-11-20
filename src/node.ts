@@ -371,7 +371,7 @@ const validatePreview = async ({ agilityPreviewKey, slug }: any) => {
 	}
 
 	//compare the preview key being used
-	const correctPreviewKey = generatePreviewKey();
+	const correctPreviewKey = await generatePreviewKey();
 
 	if (agilityPreviewKey !== correctPreviewKey) {
 		return {
@@ -388,7 +388,7 @@ const validatePreview = async ({ agilityPreviewKey, slug }: any) => {
 	};
 };
 
-const generatePreviewKey = () => {
+const generatePreviewKey = async () => {
 	//the string we want to encode
 	const str = `-1_${securityKey}_Preview`;
 
