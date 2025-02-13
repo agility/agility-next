@@ -1,6 +1,6 @@
 {
 	"name": "@agility/nextjs",
-	"version": "15.0.3",
+	"version": "15.0.7",
 	"description": "Agility CMS support for NextJS 14 and Next Image",
 	"repository": {
 		"type": "git",
@@ -32,7 +32,8 @@
 	"author": "Agility CMS",
 	"contributors": [
 		"Joel Varty",
-		"Kevin Tran"
+		"Kevin Tran",
+		"Aaron Taylor"
 	],
 	"license": "MIT",
 	"peerDependencies": {

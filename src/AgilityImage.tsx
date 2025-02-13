@@ -19,6 +19,7 @@ export const AgilityImage: FC<ImageProps> = (props) => {
 			if (propWidth && width > propWidth) theWidth = propWidth
 			const w = theWidth > 0 ? `&w=${theWidth}` : ``
 			const format = src.toLowerCase().indexOf(".svg") === -1 ? "&format=auto" : ""
+			if(src.includes(".svg")) return src // don't format SVGs
 			return `${src}?q=${quality || 60}${w}${format}`
 		}
 	} else {
