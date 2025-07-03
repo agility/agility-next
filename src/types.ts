@@ -7,14 +7,14 @@ import { ContentItem, ApiClientInstance, Page } from "@agility/content-fetch";
 
 /**
  * The GetDynamicPageItem function is used to retrieve the dynamic page item for a given page.
- * 
+ *
  * @export
  * @interface getDynamicPageURL
  * @param {int} contentID The contentID of the dynamic page item
  * @param {boolean} preview Whether to use the preview API key
  * @param {string | null} slug The slug of the dynamic page item, optional
  * @param {string | null} locale The locale of the dynamic page item, optional
- * 
+ *
  */
 export interface IGetDynamicPageURLProps {
   contentID: number;
@@ -66,7 +66,7 @@ export interface AgilitySitemapNode {
   menuText: number
   visible: { menu?: boolean, sitemap?: boolean },
   path: string
-  redirect: string | null
+  redirect: { url: string, target: string } | null
   isFolder: false,
   contentID?: number
 }

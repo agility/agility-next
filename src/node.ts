@@ -122,6 +122,13 @@ const getAgilityPageProps = async ({
 		}
 	}
 
+	if (pageInSitemap && pageInSitemap.isFolder) {
+		//we can't route to a folder...
+		console.warn(`AgilityCMS => Page [${path}] is a folder and cannot be routed to.`);
+		notFound = true;
+		pageInSitemap = null;
+	}
+
 
 	if (pageInSitemap) {
 
@@ -207,68 +214,70 @@ const getAgilityPageProps = async ({
 		}
 
 		//resolve the page template
-		pageTemplateName = page.templateName.replace(/[^0-9a-zA-Z]/g, "");
+		pageTemplateName = (page.templateName || "").replace(/[^0-9a-zA-Z]/g, "")
 
 		//resolve the modules per content zone
-		await asyncForEach(Object.keys(page.zones), async (zoneName: string) => {
-			let modules: ContentZone[] = [];
+		if (page.zones) {
+			await asyncForEach(Object.keys(page.zones), async (zoneName: string) => {
+				let modules: ContentZone[] = [];
 
-			//grab the modules for this content zone
-			const modulesForThisContentZone = page.zones[zoneName];
+				//grab the modules for this content zone
+				const modulesForThisContentZone = page.zones[zoneName];
 
-			//only proceeed if we have a getModule function to execute
-			if (!getModule) return
+				//only proceeed if we have a getModule function to execute
+				if (!getModule) return
 
-			//loop through the zone's modules
-			await asyncForEach(
-				modulesForThisContentZone,
-				async (moduleItem: { module: string; item: any; customData: any }) => {
-					//find the react component to use for the module
-					const moduleComponent = getModule ? getModule(moduleItem.module) : null
+				//loop through the zone's modules
+				await asyncForEach(
+					modulesForThisContentZone,
+					async (moduleItem: { module: string; item: any; customData: any }) => {
+						//find the react component to use for the module
+						const moduleComponent = getModule ? getModule(moduleItem.module) : null
 
-					if (moduleComponent && moduleComponent.getCustomInitialProps) {
-						//resolve any additional data for the modules
+						if (moduleComponent && moduleComponent.getCustomInitialProps) {
+							//resolve any additional data for the modules
 
-						//we have some additional data in the module we'll need, execute that method now, so it can be included in SSG
-						if (isDebugMode) {
-							console.log(
-								`AgilityCMS => Fetching additional data for ${moduleItem.module}...`
-							);
-						}
-
-						try {
-							const moduleData = await moduleComponent.getCustomInitialProps({
-								page,
-								item: moduleItem.item,
-								agility: agilityRestClient,
-								languageCode,
-								channelName,
-								sitemapNode: pageInSitemap,
-								dynamicPageItem,
-							});
-
-							//if we have additional module data, then add it to the module props using 'customData'
-							if (moduleData != null) {
-								moduleItem.customData = moduleData;
+							//we have some additional data in the module we'll need, execute that method now, so it can be included in SSG
+							if (isDebugMode) {
+								console.log(
+									`AgilityCMS => Fetching additional data for ${moduleItem.module}...`
+								);
 							}
-						} catch (error) {
-							throw new Error(
-								`AgilityCMS => Error getting custom data for module ${moduleItem.module}: ${error}`
-							);
+
+							try {
+								const moduleData = await moduleComponent.getCustomInitialProps({
+									page,
+									item: moduleItem.item,
+									agility: agilityRestClient,
+									languageCode,
+									channelName,
+									sitemapNode: pageInSitemap,
+									dynamicPageItem,
+								});
+
+								//if we have additional module data, then add it to the module props using 'customData'
+								if (moduleData != null) {
+									moduleItem.customData = moduleData;
+								}
+							} catch (error) {
+								throw new Error(
+									`AgilityCMS => Error getting custom data for module ${moduleItem.module}: ${error}`
+								);
+							}
 						}
+
+						modules.push({
+							module: moduleItem.module,
+							item: moduleItem.item,
+							customData: moduleItem.customData || null,
+						});
 					}
+				);
 
-					modules.push({
-						module: moduleItem.module,
-						item: moduleItem.item,
-						customData: moduleItem.customData || null,
-					});
-				}
-			);
-
-			//store as dictionary
-			page.zones[zoneName] = modules;
-		});
+				//store as dictionary
+				page.zones[zoneName] = modules;
+			});
+		}
 	}
 
 	return {
