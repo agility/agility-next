@@ -1,6 +1,6 @@
 {
 	"name": "@agility/nextjs",
-	"version": "15.0.7",
+	"version": "16.0.7",
 	"description": "Agility CMS support for NextJS 14 and Next Image",
 	"repository": {
 		"type": "git",
@@ -13,8 +13,8 @@
 	"main": "index.js",
 	"scripts": {
 		"clean": "git clean -Xf",
-		"build": "tsc && mv ./dist/* ./ && rm -rf ./dist",
-		"prepare": "yarn build",
+		"build": "tsc && shx mv ./dist/* ./ && shx rm -rf ./dist",
+		"prepare": "npm run build",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [
@@ -38,17 +38,18 @@
 	"license": "MIT",
 	"peerDependencies": {
 		"@agility/content-fetch": "^2.0.0",
-		"next": "^15.0.3"
+		"next": "^16.0.7"
 	},
 	"devDependencies": {
 		"@agility/content-fetch": "^2.0.2",
 		"@types/node": "^18.11.9",
-		"@types/react": "18.0.25",
-		"@types/react-dom": "^17.0.2",
-		"next": "^15.0.3",
-		"react": "^18.3.1",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"next": "^16.0.7",
+		"react": "^19.2.1",
+		"react-dom": "^19.2.1",
+		"shx": "^0.4.0",
 		"ts-loader": "^8.0.18",
 		"typescript": "4.9.3"
-	},
-	"dependencies": {}
+	}
 }
