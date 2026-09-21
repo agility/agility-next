@@ -1,6 +1,7 @@
 "use client"
 import React, {FC} from "react"
 import Image, {ImageLoader, ImageProps} from "next/image"
+import {isSvgUrl} from "./isSvgUrl"
 
 /**
  * A wrapper around the next/image compontent that adds the Agility Image API to the loader.
@@ -13,14 +14,16 @@ export const AgilityImage: FC<ImageProps> = (props) => {
 
 	if (!props.loader) {
 		loader = ({src, width, quality}) => {
+			//don't put SVGs through the image API - `format=auto` asks the CDN to rasterize them.
+			//parsed rather than string-matched, so `logo.svg?v=2` is still caught
+			if (isSvgUrl(src)) return src
+
 			let theWidth: number = width
 			const propWidth = Number(props.width)
 			//if the width that was asked for is greater than the image width, max out at the image width
 			if (propWidth && width > propWidth) theWidth = propWidth
 			const w = theWidth > 0 ? `&w=${theWidth}` : ``
-			const format = src.toLowerCase().indexOf(".svg") === -1 ? "&format=auto" : ""
-			if(src.toLowerCase().endsWith(".svg")) return src // don't format SVGs
-			return `${src}?q=${quality || 60}${w}${format}`
+			return `${src}?q=${quality || 60}${w}&format=auto`
 		}
 	} else {
 		loader = props.loader
