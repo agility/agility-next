@@ -1,5 +1,6 @@
 import React, {FC} from "react"
 import {ImageField} from "./types"
+import {isSvgUrl} from "./isSvgUrl"
 
 interface AgilityImageSourceProps
 	extends Omit<React.DetailedHTMLProps<React.SourceHTMLAttributes<HTMLSourceElement>, HTMLSourceElement>, "srcSet"> {}
@@ -48,35 +49,49 @@ export interface AgilityPicProps {
  * @param {AgilityPicProps} props
  */
 export const AgilityPic: FC<AgilityPicProps> = ({image, alt, priority, className, sources, fallbackWidth}) => {
+	//don't blow up if we weren't given an image to render
+	if (!image?.url) return null
+
+	//SVGs must NOT go through the image API - `format=auto` asks the CDN to rasterize them.
+	//Sizing is meaningless on a vector, so we skip the sources entirely as well.
+	const isSvg = isSvgUrl(image.url)
+
 	let src = image.url
 
-	if (fallbackWidth !== undefined && fallbackWidth > 0) {
+	if (!isSvg && fallbackWidth !== undefined && fallbackWidth > 0) {
 		src = `${image.url}?format=auto&w=${fallbackWidth}`
 	}
 
 	return (
 		<picture>
-			{sources?.map((source, index) => {
-				let srcSet = image.url
-				let w = Number(source.width) > 0 ? `&w=${source.width}` : ``
-				let h = Number(source.height) > 0 ? `&h=${source.height}` : ``
-				const key = `${srcSet}-${index}`
+			{!isSvg &&
+				sources?.map((source, index) => {
+					let srcSet = image.url
+					let w = Number(source.width) > 0 ? `&w=${source.width}` : ``
+					let h = Number(source.height) > 0 ? `&h=${source.height}` : ``
+					const key = `${srcSet}-${index}`
 
-				if (h || w) {
-					//if we have a width and NOT a height, do NOT allow the image to be sized larger than the original width
-					if (w && !h) w = `&w=${Math.min(Number(source.width), image.width)}`
+					if (h || w) {
+						//if we have a width and NOT a height, do NOT allow the image to be sized larger than the original width
+						if (w && !h) w = `&w=${Math.min(Number(source.width), image.width)}`
 
-					//if we have a height and NOT a width, do NOT allow the image to be sized larger than the original height
-					if (h && !w) h = `&h=${Math.min(Number(source.height), image.height)}`
+						//if we have a height and NOT a width, do NOT allow the image to be sized larger than the original height
+						if (h && !w) h = `&h=${Math.min(Number(source.height), image.height)}`
 
-					//if we have a width or a height, add the formatting query strings for quality and format, h and/or w
-					srcSet = `${image.url}?format=auto${w}${h}`
-				}
+						//if we have a width or a height, add the formatting query strings for quality and format, h and/or w
+						srcSet = `${image.url}?format=auto${w}${h}`
+					}
 
-				return <source key={key} {...source} srcSet={srcSet} />
-			})}
+					return <source key={key} {...source} srcSet={srcSet} />
+				})}
 
-			<img loading={priority ? "eager" : "lazy"} src={src} alt={alt || image.label} className={className} />
+			<img
+				loading={priority ? "eager" : "lazy"}
+				fetchPriority={priority ? "high" : undefined}
+				src={src}
+				alt={alt ?? image.label ?? ""}
+				className={className}
+			/>
 		</picture>
 	)
 }
