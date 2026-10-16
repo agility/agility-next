@@ -12,3 +12,5 @@ dist/
 !bin/*.js
 
 .yarn/*
+# test build output
+.test-build/
