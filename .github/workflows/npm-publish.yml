@@ -1,0 +1,48 @@
+name: Publish to npm
+
+# Publishes @agility/nextjs when a v<version> tag is pushed, using npm Trusted
+# Publishing (OIDC): no npm token is stored in the repo. The tag must match
+# package.json's version exactly.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # `prepare` runs the build during install, so this both installs and builds.
+      - name: Install and build
+        run: npm ci
+
+      # Always publish under the beta dist-tag. Promote to latest manually once verified:
+      #   npm dist-tag add @agility/nextjs@<version> latest
+      - name: Publish
+        run: npm publish --access public --provenance --tag beta
