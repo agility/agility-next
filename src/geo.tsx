@@ -5,16 +5,18 @@
  * Import from `@agility/nextjs/geo`. This entry point needs `@agility/geo` installed alongside
  * `@agility/nextjs`; the rest of `@agility/nextjs` doesn't.
  *
- * Dynamic pages (Phase 1 rule): when an item is rendered on a dynamic page, only the dynamic page's
- * `geo.schemaType`, `seo.robots` and `geo.ai` apply to the item. The dynamic page's title, canonical
- * URL, share image, description, `geo.summary` and `geo.structuredData` describe the dynamic page
- * itself, so they are not applied to its items.
+ * Dynamic pages: when an item is rendered on a dynamic page, the item's own `seo` and `geo` are
+ * combined with the dynamic page's by `@agility/geo` (`resolvePageGeo`), so the rule lives in one
+ * place: `geo.schemaType`, `seo.robots` and each `geo.ai` property are the item's own, else the
+ * dynamic page's; `geo.summary` and `geo.structuredData` are the item's own only. The dynamic page's
+ * title, canonical URL, share image, description, summary and JSON-LD describe the dynamic page
+ * itself, so they are never applied to its items (the item's own values are used instead).
  */
 import React from "react"
 import type { Metadata } from "next"
 import {
 	buildJsonLd,
-	readGeo,
+	resolvePageGeo,
 	serializeJsonLd,
 	toLanguageTag,
 	type BuildJsonLdOptions,
@@ -33,7 +35,10 @@ const isObject = (value: unknown): value is { [key: string]: unknown } =>
 export interface AgilityGeoInput {
 	/** The page from the Fetch API (`getPage`, or `page` from `getAgilityPageProps`). */
 	page: GeoPage | null | undefined
-	/** The content item, when rendering an item on a dynamic page (`dynamicPageItem`). */
+	/**
+	 * The content item, when rendering an item on a dynamic page (`dynamicPageItem`), with its own
+	 * `seo` and `geo` as the Fetch API returns them.
+	 */
 	item?: GeoContentItem | null
 	/** The absolute public URL of the page (or item) being rendered, without a query string. */
 	url: string
@@ -67,14 +72,16 @@ export interface GenerateAgilityMetadataOptions extends AgilityGeoInput {
  *
  * Returns only what the page sets, so merge it over your own defaults:
  * - `title`: `seo.title` as an absolute title; otherwise the fallback title (through `titleTemplate`).
- * - `description`: `seo.metaDescription`, falling back to `geo.summary`. For a dynamic page's item,
- *   the item's own `seo.metaDescription`.
- * - `keywords`: `seo.metaKeywords` (the item's own, on a dynamic page).
- * - `alternates.canonical`: `seo.canonicalUrl`, otherwise `url`. A dynamic page's canonical URL
- *   override never applies to its items; each item is canonical to its own URL.
+ * - `description`: `seo.metaDescription`, falling back to `geo.summary`.
+ * - `keywords`: `seo.metaKeywords`.
+ * - `alternates.canonical`: `seo.canonicalUrl`, otherwise `url`.
  * - `alternates.languages`: `hreflang` alternates, with `x-default`.
- * - `robots`: from `seo.robots`, when set. Applies to a dynamic page's items too.
- * - `openGraph.images`: `seo.ogImage`, when set (not applied to a dynamic page's items).
+ * - `robots`: from `seo.robots`, when set.
+ * - `openGraph.images`: `seo.ogImage`, when set.
+ *
+ * For an item on a dynamic page, every value above is the **item's own** `seo` / `geo` (its
+ * `geo.summary`, never the dynamic page's), except `robots`, which falls back to the dynamic page's
+ * when the item sets none. The combination is `resolvePageGeo` from `@agility/geo`.
  *
  * `<script>` tags (JSON-LD) can't be output through metadata; render `<AgilityJsonLd />` in the page.
  */
@@ -83,12 +90,14 @@ export function generateAgilityMetadata(options: GenerateAgilityMetadataOptions)
 	if (!page) return {}
 
 	const item = options.item || undefined
-	const seo = page.seo || undefined
-	const geo = readGeo(page.geo)
+	// The item's own `seo` when rendering a dynamic page's item; the dynamic page's never applies.
+	const seo = (item ? item.seo : page.seo) || undefined
+	// The page/item combination rule lives in @agility/geo.
+	const resolved = resolvePageGeo({ page, item })
 	const metadata: Metadata = {}
 
 	// title
-	const seoTitle = item ? undefined : nonEmpty(seo?.title)
+	const seoTitle = nonEmpty(seo?.title)
 	if (seoTitle) {
 		metadata.title = { absolute: seoTitle }
 	} else {
@@ -96,17 +105,15 @@ export function generateAgilityMetadata(options: GenerateAgilityMetadataOptions)
 		if (fallback) metadata.title = titleTemplate ? titleTemplate.split("%s").join(fallback) : fallback
 	}
 
-	// description and keywords
-	const description = item
-		? nonEmpty(item.seo?.metaDescription)
-		: nonEmpty(seo?.metaDescription) ?? nonEmpty(geo?.summary)
+	// description and keywords (resolved.summary is already the item's own on a dynamic page)
+	const description = nonEmpty(seo?.metaDescription) ?? resolved.summary
 	if (description) metadata.description = description
 
-	const keywords = item ? nonEmpty(item.seo?.metaKeywords) : nonEmpty(seo?.metaKeywords)
+	const keywords = nonEmpty(seo?.metaKeywords)
 	if (keywords) metadata.keywords = keywords
 
 	// canonical and hreflang alternates
-	const canonical = (item ? undefined : nonEmpty(seo?.canonicalUrl)) ?? nonEmpty(url)
+	const canonical = nonEmpty(seo?.canonicalUrl) ?? nonEmpty(url)
 	const alternates: NonNullable<Metadata["alternates"]> = {}
 	if (canonical) alternates.canonical = canonical
 
@@ -114,14 +121,14 @@ export function generateAgilityMetadata(options: GenerateAgilityMetadataOptions)
 	if (languages) alternates.languages = languages as NonNullable<Metadata["alternates"]>["languages"]
 	if (alternates.canonical || alternates.languages) metadata.alternates = alternates
 
-	// robots (a dynamic page's robots apply to its items)
-	const robots = seo?.robots
+	// robots (the item's own, else the dynamic page's)
+	const robots = resolved.robots
 	if (isObject(robots) && (typeof robots.index === "boolean" || typeof robots.follow === "boolean")) {
 		metadata.robots = { index: robots.index !== false, follow: robots.follow !== false }
 	}
 
 	// share image
-	const ogImage = item ? undefined : nonEmpty(seo?.ogImage)
+	const ogImage = nonEmpty(seo?.ogImage)
 	if (ogImage) metadata.openGraph = { images: [{ url: ogImage }] }
 
 	return metadata
@@ -217,7 +224,8 @@ export interface AgilityJsonLdProps extends AgilityGeoInput {
 /**
  * Render the page's schema.org JSON-LD as one `<script type="application/ld+json">`, built by
  * `buildJsonLd` from `@agility/geo`: the WebPage (typed by `geo.schemaType`), a BreadcrumbList when a
- * sitemap is passed, and the editor's `geo.structuredData` merged in by `@id`.
+ * sitemap is passed, and the editor's `geo.structuredData` merged in by `@id`. On a dynamic page,
+ * pass the item (with its `geo`): `@agility/geo` combines it with the dynamic page's.
  *
  * Server-rendered, so AI crawlers (which don't run JavaScript) see it. The output is escaped, so
  * editor-supplied text such as `</script>` can't close the tag. Renders nothing if the page is

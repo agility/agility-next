@@ -71,7 +71,7 @@ test("geo delivered as a JSON string, or invalid, never throws", () => {
 	assert.deepEqual(generateAgilityMetadata({ page: null, url: "https://e.com/a" }), {})
 })
 
-test("dynamic page item: only robots carry over; title, canonical, image and description don't", () => {
+test("dynamic page item with no seo/geo of its own: only robots carry over; title, canonical, image and description don't", () => {
 	const m = generateAgilityMetadata({ page, item, url: "https://www.example.com/products/widget", title: "Widget", titleTemplate: "%s | Site" })
 	assert.equal(m.title, "Widget | Site")
 	assert.equal(m.description, "One product")
@@ -84,6 +84,66 @@ test("dynamic page item: only robots carry over; title, canonical, image and des
 test("dynamic page item with no description of its own gets none (not the page's or its summary)", () => {
 	const m = generateAgilityMetadata({ page, item: { contentID: 5 }, url: "https://www.example.com/products/x" })
 	assert.equal(m.description, undefined)
+})
+
+const itemWithGeo = {
+	contentID: 100,
+	seo: { metaDescription: "", metaKeywords: "", metaHTML: "" },
+	geo: {
+		schemaType: "Product",
+		summary: "The widget's own summary.",
+		structuredData: { "@type": "Product", "@id": "https://www.example.com/products/widget#product", name: "Widget" },
+		ai: { crawl: "inherit", llmsInclude: "exclude" },
+	},
+	fields: {},
+}
+
+test("dynamic page item with its own geo: its summary is the description, never the page's", () => {
+	const m = generateAgilityMetadata({ page, item: itemWithGeo, url: "https://www.example.com/products/widget", title: "Widget" })
+	assert.equal(m.title, "Widget")
+	assert.equal(m.description, "The widget's own summary.")
+	assert.deepEqual(m.robots, { index: false, follow: true })
+	assert.equal(m.openGraph, undefined)
+	// The item's meta description wins over its summary, as on a page.
+	const withMeta = generateAgilityMetadata({ page, item: { ...itemWithGeo, seo: { metaDescription: "Meta" } }, url: "https://e.com/p/w" })
+	assert.equal(withMeta.description, "Meta")
+})
+
+test("dynamic page item: its own seo title, canonical, robots and share image apply, the page's don't", () => {
+	const own = {
+		contentID: 7,
+		seo: {
+			title: "Widget | Example",
+			canonicalUrl: "https://www.example.com/widget",
+			robots: { index: true, follow: false },
+			ogImage: "https://cdn.example.com/widget.png",
+			metaKeywords: "widget",
+		},
+	}
+	const m = generateAgilityMetadata({ page, item: own, url: "https://www.example.com/products/widget" })
+	assert.deepEqual(m.title, { absolute: "Widget | Example" })
+	assert.equal(m.alternates.canonical, "https://www.example.com/widget")
+	assert.deepEqual(m.robots, { index: true, follow: false })
+	assert.deepEqual(m.openGraph, { images: [{ url: "https://cdn.example.com/widget.png" }] })
+	assert.equal(m.keywords, "widget")
+})
+
+test("AgilityJsonLd on a dynamic item with its own geo: item type, summary and JSON-LD only", () => {
+	const json = JSON.parse(buildAgilityJsonLdString({ page, item: itemWithGeo, url: "https://www.example.com/products/widget" }))
+	const [webPage] = json["@graph"]
+	assert.equal(webPage["@type"], "Product")
+	assert.equal(webPage.description, "The widget's own summary.")
+	assert.ok(json["@graph"].some((node) => node["@id"] === "https://www.example.com/products/widget#product"))
+	assert.ok(!json["@graph"].some((node) => node["@id"] === "https://www.example.com/#thing"))
+})
+
+test("AgilityJsonLd on a dynamic item with geo but no type: the page's type is the default", () => {
+	const json = JSON.parse(
+		buildAgilityJsonLdString({ page, item: { ...itemWithGeo, geo: { summary: "S" } }, url: "https://www.example.com/products/widget" }),
+	)
+	assert.equal(json["@graph"][0]["@type"], "CollectionPage")
+	assert.equal(json["@graph"][0].description, "S")
+	assert.equal(json["@graph"].length, 1)
 })
 
 test("hreflang alternates: BCP 47 codes, x-default, and only with two or more locales", () => {
