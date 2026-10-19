@@ -214,3 +214,56 @@ test("AgilityJsonLd passes a CSP nonce through", () => {
 	const html = renderToStaticMarkup(React.createElement(AgilityJsonLd, { page: plainPage, url: "https://e.com/about", nonce: "abc" }))
 	assert.match(html, /nonce="abc"/)
 })
+
+test("site-relative canonical and share image resolve against an absolute url", () => {
+	const m = generateAgilityMetadata({
+		page: { ...plainPage, seo: { canonicalUrl: "/about-us", ogImage: "/og.png" } },
+		url: "https://www.example.com/about?ref=nav",
+	})
+	assert.equal(m.alternates.canonical, "https://www.example.com/about-us")
+	assert.deepEqual(m.openGraph, { images: [{ url: "https://www.example.com/og.png" }] })
+	// Absolute and protocol-relative values pass through unchanged.
+	const abs = generateAgilityMetadata({
+		page: { ...plainPage, seo: { canonicalUrl: "https://other.example.com/x", ogImage: "//cdn.example.com/s.png" } },
+		url: "https://www.example.com/about",
+	})
+	assert.equal(abs.alternates.canonical, "https://other.example.com/x")
+	assert.deepEqual(abs.openGraph, { images: [{ url: "//cdn.example.com/s.png" }] })
+	// With a relative url there's nothing to resolve against, so the value is kept as it is.
+	const rel = generateAgilityMetadata({ page: { ...plainPage, seo: { canonicalUrl: "/about-us" } }, url: "/about" })
+	assert.equal(rel.alternates.canonical, "/about-us")
+})
+
+test("fallback canonical drops the query string and fragment", () => {
+	const m = generateAgilityMetadata({ page: plainPage, url: "https://www.example.com/about?utm_source=x#team" })
+	assert.equal(m.alternates.canonical, "https://www.example.com/about")
+})
+
+test("dynamic page item never takes the dynamic page's title", () => {
+	const m = generateAgilityMetadata({ page, item, url: "https://www.example.com/products/widget", titleTemplate: "%s | Site" })
+	assert.equal(m.title, undefined)
+	// A page still falls back to its own title.
+	assert.equal(generateAgilityMetadata({ page: plainPage, url: "https://e.com/about" }).title, "About")
+})
+
+test("AgilityJsonLd on a dynamic item: named from its sitemap entry, never the dynamic page's title", () => {
+	const url = "https://www.example.com/products/widget"
+	const noSitemap = JSON.parse(buildAgilityJsonLdString({ page, item, url }))
+	assert.equal(noSitemap["@graph"][0].name, undefined)
+	const sitemap = {
+		"/products": { pageID: 12, title: "Products", path: "/products" },
+		"/products/widget": { pageID: 12, contentID: 99, title: "Widget", path: "/products/widget" },
+	}
+	const withSitemap = JSON.parse(buildAgilityJsonLdString({ page, item, url, sitemap }))
+	const webPage = withSitemap["@graph"].find((node) => node["@id"] === `${url}#webpage`)
+	assert.equal(webPage.name, "Widget")
+	// A page keeps its name.
+	const pageJson = JSON.parse(buildAgilityJsonLdString({ page: plainPage, url: "https://e.com/about" }))
+	assert.equal(pageJson["@graph"][0].name, "About")
+})
+
+test("AgilityJsonLd transform sees the page as the Fetch API returned it", () => {
+	let seenTitle
+	buildAgilityJsonLdString({ page, item, url: "https://www.example.com/products/widget", transform: (graph, ctx) => { seenTitle = ctx.page.title } })
+	assert.equal(seenTitle, "Products")
+})

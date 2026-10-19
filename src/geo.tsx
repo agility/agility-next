@@ -31,6 +31,25 @@ const nonEmpty = (value: unknown): string | undefined =>
 const isObject = (value: unknown): value is { [key: string]: unknown } =>
 	typeof value === "object" && value !== null && !Array.isArray(value)
 
+/** Has a scheme (`https:`, `mailto:`) or is protocol-relative (`//cdn.example.com/x`). */
+const isAbsoluteUrl = (value: string): boolean => /^([a-z][a-z\d+.-]*:|\/\/)/i.test(value)
+
+/**
+ * Resolve a site-relative URL (`/blog`, `og.png`) against the page's URL, when that URL is absolute,
+ * so Next.js doesn't fall back to `metadataBase` (or localhost). Absolute values are left as they are.
+ */
+const resolveUrl = (value: string, base: string | undefined): string => {
+	if (isAbsoluteUrl(value) || !base || !isAbsoluteUrl(base)) return value
+	try {
+		return new URL(value, base).href
+	} catch {
+		return value
+	}
+}
+
+/** The URL without its query string and fragment. */
+const stripQueryAndHash = (url: string): string => url.split(/[?#]/)[0]
+
 /** The page being rendered, and the item when it's a dynamic page. */
 export interface AgilityGeoInput {
 	/** The page from the Fetch API (`getPage`, or `page` from `getAgilityPageProps`). */
@@ -40,7 +59,10 @@ export interface AgilityGeoInput {
 	 * `seo` and `geo` as the Fetch API returns them.
 	 */
 	item?: GeoContentItem | null
-	/** The absolute public URL of the page (or item) being rendered, without a query string. */
+	/**
+	 * The absolute public URL of the page (or item) being rendered. Site-relative `seo.canonicalUrl`
+	 * and `seo.ogImage` values are resolved against it.
+	 */
 	url: string
 	/** The page's locale, e.g. `en-us`. */
 	locale?: string | null
@@ -49,7 +71,8 @@ export interface AgilityGeoInput {
 export interface GenerateAgilityMetadataOptions extends AgilityGeoInput {
 	/**
 	 * The title to use when the page has no `seo.title`, for example the sitemap node's title.
-	 * Defaults to `page.title`. On a dynamic page, pass the item's title (the sitemap node's `title`).
+	 * Defaults to `page.title`, except on a dynamic page: the dynamic page's title describes the
+	 * listing, so for an item pass the item's title (the sitemap node's `title`), or there is none.
 	 */
 	title?: string | null
 	/**
@@ -74,10 +97,11 @@ export interface GenerateAgilityMetadataOptions extends AgilityGeoInput {
  * - `title`: `seo.title` as an absolute title; otherwise the fallback title (through `titleTemplate`).
  * - `description`: `seo.metaDescription`, falling back to `geo.summary`.
  * - `keywords`: `seo.metaKeywords`.
- * - `alternates.canonical`: `seo.canonicalUrl`, otherwise `url`.
+ * - `alternates.canonical`: `seo.canonicalUrl`, otherwise `url` without its query string and fragment.
+ *   A site-relative `seo.canonicalUrl` is resolved against `url`.
  * - `alternates.languages`: `hreflang` alternates, with `x-default`.
  * - `robots`: from `seo.robots`, when set.
- * - `openGraph.images`: `seo.ogImage`, when set.
+ * - `openGraph.images`: `seo.ogImage`, when set, resolved against `url` when site-relative.
  *
  * For an item on a dynamic page, every value above is the **item's own** `seo` / `geo` (its
  * `geo.summary`, never the dynamic page's), except `robots`, which falls back to the dynamic page's
@@ -101,7 +125,8 @@ export function generateAgilityMetadata(options: GenerateAgilityMetadataOptions)
 	if (seoTitle) {
 		metadata.title = { absolute: seoTitle }
 	} else {
-		const fallback = nonEmpty(options.title) ?? nonEmpty(page.title)
+		// An item never takes the dynamic page's title: that names the listing page.
+		const fallback = nonEmpty(options.title) ?? (item ? undefined : nonEmpty(page.title))
 		if (fallback) metadata.title = titleTemplate ? titleTemplate.split("%s").join(fallback) : fallback
 	}
 
@@ -113,7 +138,13 @@ export function generateAgilityMetadata(options: GenerateAgilityMetadataOptions)
 	if (keywords) metadata.keywords = keywords
 
 	// canonical and hreflang alternates
-	const canonical = nonEmpty(seo?.canonicalUrl) ?? nonEmpty(url)
+	const pageUrl = nonEmpty(url)
+	const seoCanonical = nonEmpty(seo?.canonicalUrl)
+	const canonical = seoCanonical
+		? resolveUrl(seoCanonical, pageUrl)
+		: pageUrl
+			? stripQueryAndHash(pageUrl)
+			: undefined
 	const alternates: NonNullable<Metadata["alternates"]> = {}
 	if (canonical) alternates.canonical = canonical
 
@@ -129,7 +160,7 @@ export function generateAgilityMetadata(options: GenerateAgilityMetadataOptions)
 
 	// share image
 	const ogImage = nonEmpty(seo?.ogImage)
-	if (ogImage) metadata.openGraph = { images: [{ url: ogImage }] }
+	if (ogImage) metadata.openGraph = { images: [{ url: resolveUrl(ogImage, pageUrl) }] }
 
 	return metadata
 }
@@ -202,7 +233,11 @@ export function resolveAgilityAlternates(options: ResolveAgilityAlternatesOption
 }
 
 export interface AgilityJsonLdProps extends AgilityGeoInput {
-	/** A flat sitemap (`getSitemapFlat`). When given, a BreadcrumbList is built from the page's path. */
+	/**
+	 * A flat sitemap (`getSitemapFlat`). When given, a BreadcrumbList is built from the page's path.
+	 * On a dynamic page, it's also where the item's WebPage `name` comes from (its sitemap entry's
+	 * title): without it the item's WebPage has no name, since the dynamic page's title isn't used.
+	 */
 	sitemap?: GeoSitemapFlat | null
 	/**
 	 * The page's path in the sitemap, for the breadcrumb. Defaults to the URL's path. Pass it when the
@@ -243,7 +278,9 @@ export function buildAgilityJsonLdString(props: AgilityJsonLdProps): string | nu
 	if (!page || !nonEmpty(url)) return null
 	try {
 		const doc = buildJsonLd({
-			page,
+			// For an item, hide the dynamic page's title so the WebPage isn't named after the listing:
+			// its name then comes from the sitemap entry (pass `sitemap`), or it has none.
+			page: item ? { ...page, title: undefined } : page,
 			item: item || undefined,
 			url,
 			locale: locale || undefined,
@@ -252,7 +289,8 @@ export function buildAgilityJsonLdString(props: AgilityJsonLdProps): string | nu
 			baseUrl,
 			siteSettings,
 			organization,
-			transform,
+			// The transform still sees the page as the Fetch API returned it.
+			transform: transform && ((graph, ctx) => transform(graph, { ...ctx, page })),
 		})
 		if (!doc || !Array.isArray(doc["@graph"]) || doc["@graph"].length === 0) return null
 		return serializeJsonLd(doc)
