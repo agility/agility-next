@@ -15,7 +15,8 @@
 		"clean": "git clean -Xf",
 		"build": "tsc && shx mv ./dist/* ./ && shx rm -rf ./dist",
 		"prepare": "npm run build",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "node --test",
+		"typecheck": "tsc --noEmit"
 	},
 	"keywords": [
 		"next",

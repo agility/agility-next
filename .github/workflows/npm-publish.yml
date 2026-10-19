@@ -1,0 +1,78 @@
+name: Publish to npm
+
+# Publishes @agility/nextjs when a v<version> tag is pushed, using npm Trusted
+# Publishing (OIDC): no npm token is stored in the repo. The tag must match
+# package.json's version exactly, and CHANGELOG.md must have a section for that
+# version: it becomes the GitHub release notes.
+#
+# Configure the trusted publisher on npmjs.com for repository agility/agility-next,
+# workflow file npm-publish.yml, environment npm.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: write # create the GitHub release
+      id-token: write # npm Trusted Publishing + provenance
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            exit 1
+          fi
+          echo "VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "CHANGELOG.md has no section for [$VERSION]."
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Trusted Publishing needs npm 11.5.1 or later (bundled with Node 24).
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # --ignore-scripts: no dependency install script runs while the OIDC token is
+      # available. The package's own build then runs explicitly.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck and test
+        run: npm run typecheck && npm test
+
+      # Always publish under the beta dist-tag. Promote to latest manually once verified:
+      #   npm dist-tag add @agility/nextjs@<version> latest
+      # --ignore-scripts: the build above already ran, so `prepare` isn't run a second time.
+      - name: Publish
+        run: npm publish --ignore-scripts --access public --provenance --tag beta
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file release-notes.md --prerelease
