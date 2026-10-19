@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Install and build
+    name: Install, build and test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,6 +15,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      # `prepare` runs the build; fails if package-lock.json is out of sync or tsc errors.
-      - run: npm ci
+      # Fails if package-lock.json is out of sync with package.json.
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run typecheck && npm test
       - run: npm pack --dry-run
