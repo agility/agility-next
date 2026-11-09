@@ -38,12 +38,12 @@
 	],
 	"license": "MIT",
 	"peerDependencies": {
-		"@agility/content-fetch": "^2.0.11",
+		"@agility/content-fetch": "^2.0.14",
 		"next": "^16.0.10",
 		"@agility/geo": ">=0.1.0 <1"
 	},
 	"devDependencies": {
-		"@agility/content-fetch": "^2.0.11",
+		"@agility/content-fetch": "^2.0.14",
 		"@agility/geo": "^0.1.0",
 		"@types/node": "^18.11.9",
 		"@types/react": "^19.2.7",
