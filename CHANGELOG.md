@@ -9,7 +9,7 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
-## [16.1.0]
+## [16.1.0] - 2026-11-09
 
 ### Added
 - `@agility/nextjs/geo`, a new entry point for structured data and AI search (GEO / AEO). It
@@ -38,6 +38,8 @@ if the tagged version has no section here.
   gets a GitHub release whose notes come from this file.
 - `package-lock.json` is regenerated so `npm ci` installs, and `yarn.lock` is removed:
   the repo builds and publishes with npm.
+- The `@agility/content-fetch` peer dependency is now `^2.0.14`, the first release with the
+  `geo` types on `Page` and `ContentItem` that `@agility/nextjs/geo` reads.
 
 ## [16.0.8] - 2025-12-19
 
