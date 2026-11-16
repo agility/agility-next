@@ -131,6 +131,16 @@ const isTransformable = (url: string) => {
  */
 const srcSetUrl = (url: string) => url.replace(/ /g, "%20").replace(/,/g, "%2C")
 
+/**
+ * React 19 knows the `fetchPriority` prop. React 18 (which Next 16's Pages Router can run on) doesn't:
+ * it warns about the camelCase name, so there the attribute is passed in lower case, as HTML spells it.
+ */
+const fetchPriorityProp = (value: string | undefined): {[key: string]: string | undefined} => {
+	if (!value) return {}
+	const major = parseInt(String(React.version || "19").split(".")[0], 10)
+	return major >= 19 ? {fetchPriority: value} : {fetchpriority: value}
+}
+
 const positive = (n: unknown): number => {
 	const v = Number(n)
 	return v > 0 && isFinite(v) ? v : 0
@@ -249,7 +259,8 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 			  })
 			: null
 
-	//a preload has to match what the browser will pick, which it can't with <source> elements in front of the <img>
+	//a preload has to match what the browser will pick.
+	//ReactDOM.preload exists from React 19; on React 18 there is no preload, only the <img> hints, which it can't with <source> elements in front of the <img>
 	const hasSources = !!sourceElements && sourceElements.length > 0
 	const fetchPriority = imgProps.fetchPriority ?? (priority ? "high" : undefined)
 	if (priority && preload !== false && !hasSources && typeof ReactDOM.preload === "function") {
@@ -272,7 +283,8 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 				width={width}
 				height={height}
 				{...imgProps}
-				fetchPriority={fetchPriority}
+				fetchPriority={undefined}
+				{...fetchPriorityProp(fetchPriority)}
 				src={src}
 				srcSet={imgSrcSet}
 				sizes={imgSrcSet ? imgSizes : undefined}

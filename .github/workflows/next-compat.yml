@@ -1,0 +1,36 @@
+name: Next 16 compatibility
+
+# Builds a small Next app (test/fixtures/next16) against the packed package, on the oldest
+# Next 16 release, a middle minor and the latest, and checks the HTML it renders: AgilityPic
+# (priority + widths/sizes, and 16.1.0-style sources), AgilityImage, ContentZone, renderHTML
+# and the @agility/nextjs/node entry point.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  fixture:
+    name: next ${{ matrix.next }} / react ${{ matrix.react }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { next: "16.0.0", react: "19.2.0" } # oldest Next 16, with the React it shipped with
+          - { next: "16.0.0", react: "18.2.0" } # Pages Router on React 18, which Next 16 still allows
+          - { next: "16.2", react: "19.2" } # a middle minor, latest patch
+          - { next: "latest", react: "latest" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Pack
+        run: echo "TGZ=$(pwd)/$(npm pack --silent --ignore-scripts | tail -1)" >> "$GITHUB_ENV"
+      - name: Build the fixture and check its HTML
+        run: test/fixtures/next16/run.sh "${{ matrix.next }}" "${{ matrix.react }}" "$TGZ"

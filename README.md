@@ -11,6 +11,20 @@ The `agility` object that is passed around is the `api` object of the Fetch SDK.
 
 
 
+## Supported versions
+
+16.x supports **every Next.js 16 release, 16.0.0 and later**, with the React versions Next 16 accepts: React 19 (App Router and Pages Router) and React 18.2+ (Pages Router only; the App Router needs React 19). The package uses no API added in a Next 16 minor: data fetching passes `next: { revalidate, tags }` or `cache: "no-store"` to `fetch`, and nothing calls `cookies()`, `headers()`, `draftMode()`, `cacheLife`/`cacheTag` or `"use cache"`, so it works with or without `cacheComponents`.
+
+| | Minimum | Notes |
+| --- | --- | --- |
+| `next` | 16.0.0 | Keep Next on a patched release: 16.0.7 and later fix CVE-2025-66478, and the newest 16.x patch is always the safest. |
+| `react` / `react-dom` | 18.2.0 (Pages Router), 19.0.0 (App Router) | `AgilityPic`'s preload uses `ReactDOM.preload()`, which needs React 19; on React 18 it's skipped and the `<img>` still gets `loading="eager"` and `fetchpriority="high"`. |
+| `@agility/content-fetch` | 2.0.14 | |
+
+`AgilityImage` wraps `next/image` and is a client component: in the App Router, render it from a `"use client"` file. `AgilityPic`, `ContentZone` and `renderHTML` work in server components.
+
+Every pull request builds a small Next app (`test/fixtures/next16`) against the packed package on Next 16.0.0 (React 19.2.0, and React 18.2.0 on the Pages Router), the latest 16.2 and the latest Next, and checks the HTML it renders. Run it locally with `test/fixtures/next16/run.sh <next version> <react version>`.
+
 ## Images: `AgilityPic`
 
 `AgilityPic` renders an Agility image field as a `<picture>` using the Agility image API (`?format=auto&w=…`, so browsers get AVIF or WebP). It has no client boundary, so it works in server components.

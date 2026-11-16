@@ -13,7 +13,8 @@ if the tagged version has no section here.
 
 Beta of 16.2.0. Changes from 16.2.0-beta.0: `width`/`height` are on by default only with `sizes`/`widths`
 (opt in with `intrinsicSize` for `sources`/`fallbackWidth` images), so 16.1.0 prop shapes render 16.1.0's
-HTML; a `<source>` with no size gets the original's under `intrinsicSize`; snapshot tests of 16.1.0's output.
+HTML; a `<source>` with no size gets the original's under `intrinsicSize`; snapshot tests of 16.1.0's output;
+every Next 16 release supported (`next` peer `^16.0.0`, React 18.2+ on the Pages Router) and tested in CI.
 The full 16.2.0 notes follow.
 
 ## [16.2.0] - 2026-11-16
@@ -41,6 +42,14 @@ lets the browser pick the right width, and reserves the image's space. Existing 
   prop shapes.
 
 ### Changed
+- Supports every Next.js 16 release: the `next` peer dependency is `^16.0.0` (was `^16.0.10`), and `react`
+  and `react-dom` are declared as `^18.2.0 || ^19.0.0`, matching what Next 16 accepts. Nothing in the
+  package depends on a Next 16 minor. Verified by building a fixture app on Next 16.0.0 with React 19.2.0
+  and with React 18.2.0 (Pages Router), on Next 16.2.12 with React 19.2.9, and on Next 16.4.6 with
+  React 19.3.1; the new `next-compat` workflow runs that matrix on every pull request. Keep Next on a
+  patched release (16.0.7 and later fix CVE-2025-66478).
+- On React 18, `AgilityPic` writes `fetchpriority` in lower case (React 18 doesn't know the camelCase
+  prop) and skips the preload (`ReactDOM.preload()` is React 19).
 - `AgilityPic`'s `fallbackWidth` is capped at the original's width, as the `sources` already were
   (the image API upscales, so a larger width only added bytes).
 - `AgilityPic`'s `image` prop accepts any object with a `url` (`label`, `width` and `height` optional,
