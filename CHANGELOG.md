@@ -9,6 +9,44 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
+## [16.2.0] - 2026-11-16
+
+`AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
+lets the browser pick the right width, and reserves the image's space. Existing `sources`,
+`fallbackWidth` and `priority` usage keeps working; the HTML it emits changes as described under
+*Changed*.
+
+### Added
+- `AgilityPic` `sizes` and `widths`: a width-descriptor `srcset` on the `<img>` (`…?format=auto&w=640 640w, …`),
+  so the browser picks the file for the drawn size and the screen density. Widths above the original's
+  width are capped to it (the image API upscales). `sizes` alone uses a default set of widths (exported as `AGILITY_PIC_DEFAULT_WIDTHS`).
+- `AgilityPic` `priority` now also emits `fetchpriority="high"`, and a `<link rel="preload" as="image">`
+  (React 19 `preload()`) that matches the `<img>`'s `src`, `srcset` and `sizes`. No preload is emitted
+  when `sources` are given, because it can't follow `<source>` media matching. `preload={false}` turns it off.
+- `AgilityPic` passes standard `<img>` attributes through (`decoding`, `fetchPriority`, `loading`, `width`,
+  `height`, `style`, `id`, `data-*`, …); they win over the component's defaults.
+- `AgilityPic` `quality`: sent to the image API as `q`.
+- `AgilityPic` `intrinsicSize` (default `true`) to turn the new `width`/`height` attributes off.
+- Tests for `AgilityPic`'s HTML (`test/agilitypic.test.mjs`).
+
+### Changed
+- `AgilityPic`'s `<img>` gets `width` and `height`: the `src`'s width (the fallback width, or the
+  original's) at the original's aspect ratio, so the browser reserves its space (no layout shift).
+  A width-only `<source>` gets the matching `height`. **If your CSS sets an image's `width` without
+  `height: auto`, check those images after upgrading** (or pass `intrinsicSize={false}`).
+- `AgilityPic`'s `fallbackWidth` is capped at the original's width, as the `sources` already were.
+- `AgilityPic`'s `image` prop accepts any object with a `url` (`label`, `width` and `height` optional,
+  `label` may be `null`); an `ImageField` still fits.
+
+### Fixed
+- `AgilityPic` no longer sends SVGs through the image API (`format=auto` rasterized them), and skips
+  `sources` for them. `.jfif` and `.jpe` files, which the image API returns a 404 for, are skipped the same way.
+- `AgilityPic`'s `<img>` always has an `alt`: the `alt` prop, then the label, then `""`. An explicit
+  `alt=""` (decorative) is kept instead of falling back to the label.
+- `AgilityPic` renders nothing, instead of throwing, when `image` or its `url` is missing.
+- Spaces and commas in an image's file name are encoded in `srcset` candidates; they split the candidate
+  and the browser requested a broken URL.
+
 ## [16.1.0] - 2026-11-09
 
 ### Added
