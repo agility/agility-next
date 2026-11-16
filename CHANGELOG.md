@@ -9,7 +9,14 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
-## [16.2.0-beta.0] - 2026-11-16
+## [16.2.0-beta.1] - 2026-11-16
+
+Beta of 16.2.0. Changes from 16.2.0-beta.0: `width`/`height` are on by default only with `sizes`/`widths`
+(opt in with `intrinsicSize` for `sources`/`fallbackWidth` images), so 16.1.0 prop shapes render 16.1.0's
+HTML; a `<source>` with no size gets the original's under `intrinsicSize`; snapshot tests of 16.1.0's output.
+The full 16.2.0 notes follow.
+
+## [16.2.0] - 2026-11-16
 
 `AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
 lets the browser pick the right width, and reserves the image's space. Existing `sources`,
