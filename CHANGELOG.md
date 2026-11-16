@@ -9,6 +9,10 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
+## [16.2.0-beta.0] - 2026-11-16
+
+Beta of 16.2.0, published to the npm `beta` tag for testing. Same changes as 16.2.0 below.
+
 ## [16.2.0] - 2026-11-16
 
 `AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
