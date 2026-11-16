@@ -90,9 +90,13 @@ export interface AgilityPicProps extends AgilityPicImgAttributes {
 
 	/**
 	 * optional: set the <img>'s `width` and `height` attributes from the image's dimensions, so the browser
-	 * reserves the space before the file arrives (no layout shift). Defaults to true. The width is the
-	 * fallback width (or the original's width), and the height keeps the original's aspect ratio.
-	 * Pass `width` and `height` yourself to override them, or false to leave them off.
+	 * reserves the space before the file arrives (no layout shift). The width is the fallback width (or the
+	 * original's width), and the height keeps the original's aspect ratio. <source> elements get the matching
+	 * dimension too.
+	 * Defaults to true when `sizes` or `widths` is set, and to false otherwise, so pages built before 16.2 render
+	 * exactly as they did. Check that your CSS doesn't set an image's width without `height: auto` before
+	 * turning it on, or the image is stretched to the `height` attribute.
+	 * Passing `width` and `height` yourself overrides them.
 	 */
 	intrinsicSize?: boolean
 
@@ -198,10 +202,12 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 		}
 	}
 
+	//width and height attributes: on by default in the srcset mode only, so pre-16.2 usage renders the same
+	const intrinsic = intrinsicSize ?? !!imgSrcSet
 	//width and height attributes: the rendered file's width, at the original's aspect ratio
 	let width: number | undefined = undefined
 	let height: number | undefined = undefined
-	if (intrinsicSize !== false && imageWidth > 0 && imageHeight > 0) {
+	if (intrinsic && imageWidth > 0 && imageHeight > 0) {
 		width = srcWidth > 0 ? srcWidth : imageWidth
 		height = Math.round((width * imageHeight) / imageWidth)
 	}
@@ -229,9 +235,14 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 					//a width-only (or height-only) source gets the other dimension at the original's aspect ratio,
 					//so the browser can reserve the space when this source is picked
 					const dims: {width?: number; height?: number} = {}
-					if (intrinsicSize !== false && imageWidth > 0 && imageHeight > 0) {
+					if (intrinsic && imageWidth > 0 && imageHeight > 0) {
 						if (sw > 0 && !(sh > 0)) dims.height = Math.round((sw * imageHeight) / imageWidth)
 						if (sh > 0 && !(sw > 0)) dims.width = Math.round((sh * imageWidth) / imageHeight)
+						//a source with no size serves the original
+						if (!(sw > 0) && !(sh > 0)) {
+							dims.width = imageWidth
+							dims.height = imageHeight
+						}
 					}
 
 					return <source key={key} {...source} {...dims} srcSet={srcSet} />

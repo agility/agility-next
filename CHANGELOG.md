@@ -9,12 +9,13 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
-## [16.2.0] - 2026-11-16
+## [16.2.0-beta.0] - 2026-11-16
 
 `AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
 lets the browser pick the right width, and reserves the image's space. Existing `sources`,
-`fallbackWidth` and `priority` usage keeps working; the HTML it emits changes as described under
-*Changed*.
+`fallbackWidth`, `priority`, `alt` and `className` usage renders 16.1.0's HTML, plus `fetchpriority="high"`
+(and a preload) on a `priority` image. The only values that differ are the fallback width cap under
+*Changed* and the fixes under *Fixed*.
 
 ### Added
 - `AgilityPic` `sizes` and `widths`: a width-descriptor `srcset` on the `<img>` (`…?format=auto&w=640 640w, …`),
@@ -26,15 +27,15 @@ lets the browser pick the right width, and reserves the image's space. Existing 
 - `AgilityPic` passes standard `<img>` attributes through (`decoding`, `fetchPriority`, `loading`, `width`,
   `height`, `style`, `id`, `data-*`, …); they win over the component's defaults.
 - `AgilityPic` `quality`: sent to the image API as `q`.
-- `AgilityPic` `intrinsicSize` (default `true`) to turn the new `width`/`height` attributes off.
-- Tests for `AgilityPic`'s HTML (`test/agilitypic.test.mjs`).
+- `AgilityPic` `intrinsicSize`: `width` and `height` on the `<img>` (the `src`'s width at the original's
+  aspect ratio) and the matching size on each `<source>`, so the browser reserves the space (no layout
+  shift). On by default with `sizes`/`widths`, off by default otherwise so existing pages are unchanged.
+- Tests for `AgilityPic`'s HTML (`test/agilitypic.test.mjs`), including 16.1.0's exact output for its
+  prop shapes.
 
 ### Changed
-- `AgilityPic`'s `<img>` gets `width` and `height`: the `src`'s width (the fallback width, or the
-  original's) at the original's aspect ratio, so the browser reserves its space (no layout shift).
-  A width-only `<source>` gets the matching `height`. **If your CSS sets an image's `width` without
-  `height: auto`, check those images after upgrading** (or pass `intrinsicSize={false}`).
-- `AgilityPic`'s `fallbackWidth` is capped at the original's width, as the `sources` already were.
+- `AgilityPic`'s `fallbackWidth` is capped at the original's width, as the `sources` already were
+  (the image API upscales, so a larger width only added bytes).
 - `AgilityPic`'s `image` prop accepts any object with a `url` (`label`, `width` and `height` optional,
   `label` may be `null`); an `ImageField` still fits.
 

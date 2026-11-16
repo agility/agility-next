@@ -24,21 +24,59 @@ const legacySources = [
 	{ media: "(max-width: 639px)", width: 480 },
 ]
 
-test("sources + fallbackWidth: same sources and src as before, plus width/height", () => {
-	const html = render({ sources: legacySources, fallbackWidth: 800, className: "c" })
-	assert.match(html, /^<picture><source media="\(min-width: 1280px\)" width="800" height="600" srcSet="https:\/\/cdn.example.com\/x\/photo.jpg\?format=auto&amp;w=800"\/>/)
-	assert.equal(attr(html, "img", "src"), "https://cdn.example.com/x/photo.jpg?format=auto&w=800")
-	assert.equal(attr(html, "img", "loading"), "lazy")
+// 16.1.0's exact output for its prop shapes, captured by rendering the published 16.1.0 package.
+// 16.2.0 must emit the same HTML for them; the only additions allowed are listed per case.
+const legacyMixed = [
+	{ media: "(min-width: 1280px) and (min-resolution: 2dppx)", width: 800 },
+	{ media: "(min-width: 1280px)", width: 400 },
+	{ media: "(max-width: 639px)", width: 400 },
+	{ media: "(min-width: 1px)", width: 300, height: 300 },
+	{ media: "(min-width: 2px)", height: 500 },
+	{ media: "(min-width: 3px)", type: "image/webp" },
+]
+const legacyMixedHtml =
+	'<source media="(min-width: 1280px) and (min-resolution: 2dppx)" width="800" srcSet="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=800"/><source media="(min-width: 1280px)" width="400" srcSet="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=400"/><source media="(max-width: 639px)" width="400" srcSet="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=400"/><source media="(min-width: 1px)" width="300" height="300" srcSet="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=300&amp;h=300"/><source media="(min-width: 2px)" height="500" srcSet="https://cdn.example.com/x/photo.jpg?format=auto&amp;h=500"/><source media="(min-width: 3px)" type="image/webp" srcSet="https://cdn.example.com/x/photo.jpg"/>'
+const v161 = [
+	// [props, 16.1.0 HTML, 16.2.0 HTML]
+	[
+		{ sources: legacyMixed, fallbackWidth: 400, priority: true, className: "h-full w-full object-cover" },
+		`<picture>${legacyMixedHtml}<img loading="eager" src="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=400" alt="A photo" class="h-full w-full object-cover"/></picture>`,
+		// + fetchpriority="high" (no preload: there are sources)
+		`<picture>${legacyMixedHtml}<img loading="eager" fetchPriority="high" src="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=400" alt="A photo" class="h-full w-full object-cover"/></picture>`,
+	],
+	[
+		{ sources: legacyMixed, fallbackWidth: 800 },
+		`<picture>${legacyMixedHtml}<img loading="lazy" src="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=800" alt="A photo"/></picture>`,
+		null, // identical
+	],
+	[{ fallbackWidth: 640, className: "c" }, '<picture><img loading="lazy" src="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=640" alt="A photo" class="c"/></picture>', null],
+	[{ alt: "Given" }, '<picture><img loading="lazy" src="https://cdn.example.com/x/photo.jpg" alt="Given"/></picture>', null],
+	[{}, '<picture><img loading="lazy" src="https://cdn.example.com/x/photo.jpg" alt="A photo"/></picture>', null],
+]
+
+test("16.1.0 prop shapes render 16.1.0's HTML (plus fetchpriority with priority)", () => {
+	for (const [props, before, after] of v161) assert.equal(render(props), after ?? before, JSON.stringify(props))
+})
+
+test("priority without sources: 16.1.0's HTML plus fetchpriority and a preload of the same src", () => {
+	assert.equal(
+		render({ fallbackWidth: 640, priority: true }),
+		'<link rel="preload" href="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=640" as="image" fetchPriority="high"/><picture><img loading="eager" fetchPriority="high" src="https://cdn.example.com/x/photo.jpg?format=auto&amp;w=640" alt="A photo"/></picture>',
+	)
+})
+
+test("intrinsicSize opts the 16.1.0 shapes into width/height", () => {
+	const html = render({ sources: legacySources, fallbackWidth: 800, intrinsicSize: true })
+	assert.match(html, /^<picture><source media="\(min-width: 1280px\)" width="800" height="600" srcSet=/)
 	assert.equal(attr(html, "img", "width"), "800")
 	assert.equal(attr(html, "img", "height"), "600")
-	assert.equal(attr(html, "img", "class"), "c")
-	assert.equal(attr(html, "img", "srcSet"), undefined)
-	assert.equal(attr(html, "img", "fetchPriority"), undefined)
-	assert.ok(!html.includes("<link"))
+	const noSize = render({ sources: [{ media: "(min-width: 1px)", type: "image/webp" }], intrinsicSize: true })
+	assert.equal(attr(noSize, "source", "width"), "1920")
+	assert.equal(attr(noSize, "source", "height"), "1440")
 })
 
 test("a source wider than the original is capped at the original's width; so is the fallback", () => {
-	const html = render({ sources: [{ media: "(min-width: 1px)", width: 5000 }], fallbackWidth: 4000 })
+	const html = render({ sources: [{ media: "(min-width: 1px)", width: 5000 }], fallbackWidth: 4000, intrinsicSize: true })
 	assert.equal(attr(html, "source", "srcSet"), "https://cdn.example.com/x/photo.jpg?format=auto&w=1920")
 	assert.equal(attr(html, "img", "src"), "https://cdn.example.com/x/photo.jpg?format=auto&w=1920")
 	assert.equal(attr(html, "img", "width"), "1920")
@@ -126,8 +164,8 @@ test("standard <img> attributes pass through and can override the defaults", () 
 	assert.equal(attr(html, "img", "data-x"), "y")
 })
 
-test("intrinsicSize={false} leaves width and height off", () => {
-	const html = render({ fallbackWidth: 400, sources: [{ media: "(min-width: 1px)", width: 800 }], intrinsicSize: false })
+test("intrinsicSize={false} leaves width and height off in the srcset mode", () => {
+	const html = render({ fallbackWidth: 400, sources: [{ media: "(min-width: 1px)", width: 800 }], sizes: "100vw", intrinsicSize: false })
 	assert.equal(attr(html, "img", "width"), undefined)
 	assert.equal(attr(html, "img", "height"), undefined)
 	assert.equal(attr(html, "source", "height"), undefined)

@@ -58,12 +58,12 @@ import { AgilityPic } from "@agility/nextjs"
 | `priority` | For the LCP image: `loading="eager"`, `fetchpriority="high"`, and a `<link rel="preload" as="image">` when there are no `sources` (see below). Use it on one image per page. |
 | `preload` | Set `false` to keep the `priority` hints without the preload. |
 | `quality` | Image quality, 1 to 100, sent as `q`. Unset, the image API's default is used. |
-| `intrinsicSize` | Default `true`: the `<img>` gets `width` and `height` (the `src`'s width at the original's aspect ratio), so the browser reserves its space and the page doesn't shift. Set `false` to leave them off. |
+| `intrinsicSize` | The `<img>` gets `width` and `height` (the `src`'s width at the original's aspect ratio) and each `<source>` the matching size, so the browser reserves the space and the page doesn't shift. On by default with `sizes`/`widths`; off by default otherwise, so pages built before 16.2 render exactly as they did. |
 | `className` | The `<img>`'s class. |
 | any `<img>` attribute | `decoding`, `fetchPriority`, `loading`, `width`, `height`, `style`, `id`, `data-*` and the rest pass through to the `<img>` and win over the defaults above. |
 
 - **Preloading with `sources`.** A preload can't say "only if no earlier `<source>` matched", so a `priority` image with `sources` gets `fetchpriority="high"` and `loading="eager"` but no preload, which avoids fetching a file the browser then doesn't use. For an LCP image, use `sizes` (and `widths`) instead of `sources` unless you need a different crop per breakpoint. The preload uses React 19's `preload()` from `react-dom`, and the `<link>` lands in the document's `<head>`.
-- **`width` and `height` (since 16.2).** They match the size the image already rendered at when nothing else sized it, so an unstyled image looks the same. If your CSS sets an image's `width` but not its `height`, add `height: auto` (Tailwind's preflight already does), or the image is stretched to the `height` attribute; or pass `intrinsicSize={false}`.
+- **`width` and `height` (since 16.2).** Before turning `intrinsicSize` on for existing `sources`/`fallbackWidth` images, check that your CSS doesn't set an image's `width` without `height: auto` (Tailwind's preflight sets it), or the image is stretched to the `height` attribute.
 - SVGs, and `.jfif` / `.jpe` files (the image API returns a 404 for them with any query), are rendered as-is: no image API query, no `sources`, no `srcset`.
 
 ## Structured data and AI search (GEO / AEO)
