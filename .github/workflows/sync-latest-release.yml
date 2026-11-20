@@ -1,0 +1,60 @@
+name: Sync GitHub latest release with npm
+
+# npm-publish.yml publishes every version to the `beta` dist-tag and creates a GitHub
+# pre-release. Promotion is manual (`npm dist-tag add @agility/nextjs@<version> latest`):
+# npm Trusted Publishing covers `npm publish` only, so CI can't move dist-tags, and npm
+# can't notify GitHub when one moves. This workflow closes the gap: it reads npm's
+# `latest` and makes that version's GitHub release a full release marked Latest.
+# It changes nothing when they already match.
+#
+# GitHub disables scheduled workflows after 60 days without commits, which is normal
+# between releases, so npm-publish.yml re-enables this workflow on every publish. Run it
+# by hand right after promoting (`gh workflow run sync-latest-release.yml`); the hourly
+# schedule is a best-effort backstop.
+on:
+  schedule:
+    - cron: "17 * * * *" # hourly
+  workflow_dispatch:
+
+concurrency:
+  group: sync-latest-release
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Mark npm latest as the GitHub latest release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # edit releases
+    steps:
+      - name: Sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          LATEST="$(npm view @agility/nextjs dist-tags.latest)"
+          if [ -z "$LATEST" ]; then
+            echo "npm returned no latest dist-tag for @agility/nextjs." >&2
+            exit 1
+          fi
+          TAG="v$LATEST"
+          echo "npm latest: $LATEST"
+          # Only a 404 means "no such release"; any other API error fails the job.
+          if ! RELEASE="$(gh api "repos/$REPO/releases/tags/$TAG" 2>err.txt)"; then
+            if grep -q "HTTP 404" err.txt; then
+              echo "No GitHub release $TAG (published before the release workflow existed?). Nothing to do."
+              exit 0
+            fi
+            cat err.txt >&2
+            exit 1
+          fi
+          PRE="$(echo "$RELEASE" | jq -r .prerelease)"
+          # releases/latest is 404 when there is no full release yet: treat that as "none".
+          CURRENT="$(gh api "repos/$REPO/releases/latest" --jq .tag_name 2>/dev/null)" || CURRENT=""
+          if [ "$PRE" = "false" ] && [ "$CURRENT" = "$TAG" ]; then
+            echo "$TAG is already the latest release."
+            exit 0
+          fi
+          gh release edit "$TAG" --repo "$REPO" --prerelease=false --latest
+          echo "Marked $TAG as the latest release (was: ${CURRENT:-none}, prerelease=$PRE)." | tee -a "$GITHUB_STEP_SUMMARY"

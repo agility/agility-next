@@ -19,6 +19,7 @@ jobs:
     environment: npm
     permissions:
       contents: write # create the GitHub release
+      actions: write # re-enable sync-latest-release.yml (GitHub disables idle schedules)
       id-token: write # npm Trusted Publishing + provenance
 
     steps:
@@ -76,3 +77,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file release-notes.md --prerelease
+
+      # GitHub turns off scheduled workflows after 60 days without commits. Turn the
+      # latest-release sync back on so it catches this version's promotion to npm latest.
+      - name: Re-enable the latest-release sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # The package is already published by now, so a failure here only warns.
+        run: |
+          gh workflow enable sync-latest-release.yml --repo "$GITHUB_REPOSITORY" \
+            || echo "::warning::Couldn't re-enable sync-latest-release.yml; run it by hand after promoting."
