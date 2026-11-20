@@ -207,3 +207,38 @@ test("no image, or an image without a url, renders nothing", () => {
 	assert.equal(render({ image: null }), "")
 	assert.equal(render({ image: { url: "" } }), "")
 })
+
+// 16.2.1 fixes.
+test("16.2.1: a URL that already has a query string gets the image API parameters after &", () => {
+	const q = { ...image, url: "https://cdn.example.com/x/photo.jpg?v=2" }
+	const html = renderToStaticMarkup(React.createElement(AgilityPic, { image: q, fallbackWidth: 800, widths: [400, 800] }))
+	assert.equal(attr(html, "img", "src"), "https://cdn.example.com/x/photo.jpg?v=2&format=auto&w=800")
+	assert.equal(
+		attr(html, "img", "srcSet"),
+		"https://cdn.example.com/x/photo.jpg?v=2&format=auto&w=400 400w, https://cdn.example.com/x/photo.jpg?v=2&format=auto&w=800 800w"
+	)
+	assert.ok(!/\?[^"\s,]*\?/.test(html), "no URL has a second ?")
+	const withSources = renderToStaticMarkup(
+		React.createElement(AgilityPic, { image: q, sources: [{ media: "(min-width: 640px)", width: 1200 }] })
+	)
+	assert.equal(attr(withSources, "source", "srcSet"), "https://cdn.example.com/x/photo.jpg?v=2&format=auto&w=1200")
+})
+
+test("16.2.1: quality is applied when no width is requested", () => {
+	assert.equal(attr(render({ quality: 50 }), "img", "src"), "https://cdn.example.com/x/photo.jpg?format=auto&q=50")
+	const html = render({ quality: 50, sources: [{ media: "(min-width: 640px)" }] })
+	assert.equal(attr(html, "source", "srcSet"), "https://cdn.example.com/x/photo.jpg?format=auto&q=50")
+	// without quality, an unsized image and an unsized source stay the bare URL, as in 16.1.0
+	assert.equal(attr(render({}), "img", "src"), "https://cdn.example.com/x/photo.jpg")
+	assert.equal(attr(render({ sources: [{ media: "(min-width: 640px)" }] }), "source", "srcSet"), "https://cdn.example.com/x/photo.jpg")
+	// an SVG is never transformed, quality or not
+	const svg = { ...image, url: "https://cdn.example.com/x/logo.svg" }
+	assert.equal(attr(renderToStaticMarkup(React.createElement(AgilityPic, { image: svg, quality: 50 })), "img", "src"), "https://cdn.example.com/x/logo.svg")
+})
+
+test("16.2.1: fetchPriority is written once, from the prop or from priority", () => {
+	assert.equal(attr(render({}), "img", "fetchPriority"), undefined)
+	assert.equal(attr(render({ priority: true }), "img", "fetchPriority"), "high")
+	assert.equal(attr(render({ fetchPriority: "low" }), "img", "fetchPriority"), "low")
+	assert.equal((render({ fetchPriority: "low" }).match(/fetchpriority=/gi) || []).length, 1)
+})

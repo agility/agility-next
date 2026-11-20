@@ -9,6 +9,17 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
+## [16.2.1] - 2026-11-20
+
+### Fixed
+- `AgilityPic` on an image URL that already has a query string (`photo.jpg?v=2`): the image API
+  parameters are added with `&`, so the URL no longer has a second `?`, which lost the format and width.
+- `AgilityPic` `quality` on an image with no width (no `fallbackWidth`, `widths`/`sizes` or sized
+  `sources`) is now sent to the image API (`?format=auto&q=…`). It was dropped. An unsized `<source>`
+  gets the same. Without `quality`, both stay the bare URL, as before.
+- `AgilityPic` on React 18 (Pages Router) no longer logs "React does not recognize the `fetchPriority`
+  prop" in development. The attribute is still written, in lower case.
+
 ## [16.2.0] - 2026-11-16
 
 `AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
