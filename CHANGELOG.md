@@ -9,6 +9,52 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
+## [16.2.0] - 2026-11-16
+
+`AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
+lets the browser pick the right width, and reserves the image's space. Existing `sources`,
+`fallbackWidth`, `priority`, `alt` and `className` usage renders 16.1.0's HTML, plus `fetchpriority="high"`
+(and a preload) on a `priority` image. The only values that differ are the fallback width cap under
+*Changed* and the fixes under *Fixed*.
+
+### Added
+- `AgilityPic` `sizes` and `widths`: a width-descriptor `srcset` on the `<img>` (`…?format=auto&w=640 640w, …`),
+  so the browser picks the file for the drawn size and the screen density. Widths above the original's
+  width are capped to it (the image API upscales). `sizes` alone uses a default set of widths (exported as `AGILITY_PIC_DEFAULT_WIDTHS`).
+- `AgilityPic` `priority` now also emits `fetchpriority="high"`, and a `<link rel="preload" as="image">`
+  (React 19 `preload()`) that matches the `<img>`'s `src`, `srcset` and `sizes`. No preload is emitted
+  when `sources` are given, because it can't follow `<source>` media matching. `preload={false}` turns it off.
+- `AgilityPic` passes standard `<img>` attributes through (`decoding`, `fetchPriority`, `loading`, `width`,
+  `height`, `style`, `id`, `data-*`, …); they win over the component's defaults.
+- `AgilityPic` `quality`: sent to the image API as `q`.
+- `AgilityPic` `intrinsicSize`: `width` and `height` on the `<img>` (the `src`'s width at the original's
+  aspect ratio) and the matching size on each `<source>`, so the browser reserves the space (no layout
+  shift). On by default with `sizes`/`widths`, off by default otherwise so existing pages are unchanged.
+- Tests for `AgilityPic`'s HTML (`test/agilitypic.test.mjs`), including 16.1.0's exact output for its
+  prop shapes.
+
+### Changed
+- `react` and `react-dom` are declared as `^18.2.0 || ^19.0.0`, matching what Next 16 accepts. The `next`
+  peer dependency stays `^16.0.10`, the first 16.x with all the December 2025 RSC security fixes; nothing
+  in the package depends on a later Next 16 minor. The new `next-compat` workflow builds a fixture app on
+  every pull request on Next 16.0.10 with React 19.2.0 and with React 18.2.0 (Pages Router), on the latest
+  Next 16.2, and on the newest Next 16 with React 19.
+- On React 18, `AgilityPic` writes `fetchpriority` in lower case (React 18 doesn't know the camelCase
+  prop) and skips the preload (`ReactDOM.preload()` is React 19).
+- `AgilityPic`'s `fallbackWidth` is capped at the original's width, as the `sources` already were
+  (the image API upscales, so a larger width only added bytes).
+- `AgilityPic`'s `image` prop accepts any object with a `url` (`label`, `width` and `height` optional,
+  `label` may be `null`); an `ImageField` still fits.
+
+### Fixed
+- `AgilityPic` no longer sends SVGs through the image API (`format=auto` rasterized them), and skips
+  `sources` for them. `.jfif` and `.jpe` files, which the image API returns a 404 for, are skipped the same way.
+- `AgilityPic`'s `<img>` always has an `alt`: the `alt` prop, then the label, then `""`. An explicit
+  `alt=""` (decorative) is kept instead of falling back to the label.
+- `AgilityPic` renders nothing, instead of throwing, when `image` or its `url` is missing.
+- Spaces and commas in an image's file name are encoded in `srcset` candidates; they split the candidate
+  and the browser requested a broken URL.
+
 ## [16.1.0] - 2026-11-09
 
 ### Added

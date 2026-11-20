@@ -1,0 +1,9 @@
+{
+	"name": "agility-nextjs-fixture-next16",
+	"private": true,
+	"description": "Builds a small Next app against the packed @agility/nextjs. See test/fixtures/next16/run.sh.",
+	"scripts": {
+		"build": "next build",
+		"start": "next start"
+	}
+}

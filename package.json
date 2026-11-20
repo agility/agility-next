@@ -1,6 +1,6 @@
 {
 	"name": "@agility/nextjs",
-	"version": "16.1.0",
+	"version": "16.2.0",
 	"description": "Agility CMS support for NextJS 16 and Next Image",
 	"repository": {
 		"type": "git",
@@ -15,7 +15,7 @@
 		"clean": "git clean -Xf",
 		"build": "tsc && shx mv ./dist/* ./ && shx rm -rf ./dist",
 		"prepare": "npm run build",
-		"test": "tsc --outDir .test-build && node --test test/geo.test.mjs",
+		"test": "tsc --outDir .test-build && node --test test/geo.test.mjs test/agilitypic.test.mjs",
 		"typecheck": "tsc --noEmit"
 	},
 	"keywords": [
@@ -40,6 +40,8 @@
 	"peerDependencies": {
 		"@agility/content-fetch": "^2.0.14",
 		"next": "^16.0.10",
+		"react": "^18.2.0 || ^19.0.0",
+		"react-dom": "^18.2.0 || ^19.0.0",
 		"@agility/geo": ">=0.1.0 <1"
 	},
 	"devDependencies": {
