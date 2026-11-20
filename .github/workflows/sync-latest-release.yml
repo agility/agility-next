@@ -1,0 +1,45 @@
+name: Sync GitHub latest release with npm
+
+# npm-publish.yml publishes every version to the `beta` dist-tag and creates a GitHub
+# pre-release. Promotion is manual (`npm dist-tag add @agility/nextjs@<version> latest`):
+# npm Trusted Publishing covers `npm publish` only, so CI can't move dist-tags, and npm
+# can't notify GitHub when one moves. This workflow closes the gap: it reads npm's
+# `latest` and makes that version's GitHub release a full release marked Latest.
+# It changes nothing when they already match.
+on:
+  schedule:
+    - cron: "17 * * * *" # hourly
+  workflow_dispatch:
+
+concurrency:
+  group: sync-latest-release
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Mark npm latest as the GitHub latest release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # edit releases
+    steps:
+      - name: Sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          LATEST="$(npm view @agility/nextjs dist-tags.latest)"
+          TAG="v$LATEST"
+          echo "npm latest: $LATEST"
+          if ! gh release view "$TAG" --repo "$REPO" --json tagName >/dev/null 2>&1; then
+            echo "No GitHub release $TAG (published before the release workflow existed?). Nothing to do."
+            exit 0
+          fi
+          PRE="$(gh release view "$TAG" --repo "$REPO" --json isPrerelease --jq .isPrerelease)"
+          CURRENT="$(gh api "repos/$REPO/releases/latest" --jq .tag_name 2>/dev/null || true)"
+          if [ "$PRE" = "false" ] && [ "$CURRENT" = "$TAG" ]; then
+            echo "$TAG is already the latest release."
+            exit 0
+          fi
+          gh release edit "$TAG" --repo "$REPO" --prerelease=false --latest
+          echo "Marked $TAG as the latest release (was: ${CURRENT:-none}, prerelease=$PRE)." | tee -a "$GITHUB_STEP_SUMMARY"

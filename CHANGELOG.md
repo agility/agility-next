@@ -9,7 +9,7 @@ if the tagged version has no section here.
 
 ## [Unreleased]
 
-## [16.2.0] - 2026-11-16
+## [16.2.0] - 2026-11-20
 
 `AgilityPic` can now win the Largest Contentful Paint: it prioritizes and preloads the LCP image,
 lets the browser pick the right width, and reserves the image's space. Existing `sources`,

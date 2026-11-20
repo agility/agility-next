@@ -149,3 +149,4 @@ Publishing runs in GitHub Actions (`.github/workflows/npm-publish.yml`) with npm
 2. Push a matching tag: `git tag v<version> && git push origin v<version>`.
 3. The workflow checks the tag matches `package.json` and that `CHANGELOG.md` has a section for it, then builds, typechecks, tests, publishes to the `beta` dist-tag with provenance, and creates a GitHub pre-release with that section as its notes.
 4. Once verified, promote it: `npm dist-tag add @agility/nextjs@<version> latest`.
+5. Within the hour, `.github/workflows/sync-latest-release.yml` sees the new npm `latest` and makes its GitHub release a full release marked **Latest**. To do it right away, run that workflow from the Actions tab (or `gh workflow run sync-latest-release.yml`).
