@@ -115,14 +115,25 @@ export const AGILITY_PIC_DEFAULT_WIDTHS = [320, 480, 640, 768, 1024, 1280, 1600,
  */
 const UNTRANSFORMABLE = /\.(svg|jfif|jpe)$/i
 
-const isTransformable = (url: string) => {
-	let pathname = url
+const pathnameOf = (url: string) => {
 	try {
-		pathname = new URL(url, "https://example.com").pathname
+		return new URL(url, "https://example.com").pathname
 	} catch (e) {
-		pathname = url.split(/[?#]/)[0]
+		return url.split(/[?#]/)[0]
 	}
-	return !UNTRANSFORMABLE.test(pathname)
+}
+
+const isTransformable = (url: string) => !UNTRANSFORMABLE.test(pathnameOf(url))
+
+/**
+ * The URL with image API parameters added: after its own query string if it has one,
+ * and before a `#fragment` (which the browser never sends).
+ */
+const withParams = (url: string, params: string) => {
+	const hash = url.indexOf("#")
+	const base = hash === -1 ? url : url.slice(0, hash)
+	const fragment = hash === -1 ? "" : url.slice(hash)
+	return `${base}${base.indexOf("?") === -1 ? "?" : "&"}${params}${fragment}`
 }
 
 /**
@@ -178,19 +189,20 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 	const imageWidth = positive(image.width)
 	const imageHeight = positive(image.height)
 	const q = positive(quality) > 0 ? `&q=${Math.min(100, Math.round(positive(quality)))}` : ``
-	//image API parameters go after the URL's own query string, if it has one
-	const sep = url.indexOf("?") === -1 ? "?" : "&"
+	//`quality` alone (no width) sends the original through the image API; not for GIFs,
+	//which the API may return as a single still frame in a modern format
+	const qualityOnly = transformable && !!q && !/\.gif$/i.test(pathnameOf(url))
 
 	//never ask the image API for more than the original's width: it upscales
 	const capWidth = (w: number) => (imageWidth > 0 ? Math.min(w, imageWidth) : w)
 	const sizedUrl = (w: number, h?: number) =>
-		`${url}${sep}format=auto${w > 0 ? `&w=${w}` : ``}${h > 0 ? `&h=${h}` : ``}${q}`
+		withParams(url, `format=auto${w > 0 ? `&w=${w}` : ``}${h > 0 ? `&h=${h}` : ``}${q}`)
 
 	//the fallback <img> src: the bare URL unless a width or a quality is asked for
 	let src = url
 	const srcWidth = transformable ? capWidth(positive(fallbackWidth)) : 0
 	if (srcWidth > 0) src = sizedUrl(srcWidth)
-	else if (transformable && q) src = sizedUrl(0)
+	else if (qualityOnly) src = sizedUrl(0)
 
 	//width-descriptor srcset mode: widths and/or sizes
 	let imgSrcSet: string | undefined = undefined
@@ -208,9 +220,8 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 		}
 		list.sort((a, b) => a - b)
 		if (list.length > 0) {
-			const setUrl = srcSetUrl(url)
 			imgSrcSet = list
-				.map((w) => `${setUrl}${sep}format=auto&w=${w}${q} ${w}w`)
+				.map((w) => `${srcSetUrl(sizedUrl(w))} ${w}w`)
 				.join(", ")
 			if (!imgSizes) imgSizes = "100vw"
 			//with no fallback width, the src is the largest candidate (only browsers without srcset use it)
@@ -232,7 +243,7 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 		transformable && sources
 			? sources.map((source, index) => {
 					//a source with no size serves the original, at the requested quality if there is one
-					let srcSet = srcSetUrl(q ? sizedUrl(0) : url)
+					let srcSet = srcSetUrl(qualityOnly ? sizedUrl(0) : url)
 					const sw = positive(source.width)
 					const sh = positive(source.height)
 					const key = `${url}-${index}`
@@ -269,7 +280,8 @@ export const AgilityPic: FC<AgilityPicProps> = ({
 	//a preload has to match what the browser will pick.
 	//ReactDOM.preload exists from React 19; on React 18 there is no preload, only the <img> hints, which it can't with <source> elements in front of the <img>
 	const hasSources = !!sourceElements && sourceElements.length > 0
-	const fetchPriority = fetchPriorityAttr ?? (priority ? "high" : undefined)
+	//an empty fetchPriority counts as unset, so the <img> and its preload agree
+	const fetchPriority = fetchPriorityAttr || (priority ? "high" : undefined)
 	if (priority && preload !== false && !hasSources && typeof ReactDOM.preload === "function") {
 		ReactDOM.preload(src, {
 			as: "image",

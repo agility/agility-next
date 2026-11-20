@@ -241,4 +241,44 @@ test("16.2.1: fetchPriority is written once, from the prop or from priority", ()
 	assert.equal(attr(render({ priority: true }), "img", "fetchPriority"), "high")
 	assert.equal(attr(render({ fetchPriority: "low" }), "img", "fetchPriority"), "low")
 	assert.equal((render({ fetchPriority: "low" }).match(/fetchpriority=/gi) || []).length, 1)
+	// an empty fetchPriority counts as unset: priority still makes it high
+	assert.equal(attr(render({ priority: true, fetchPriority: "" }), "img", "fetchPriority"), "high")
+})
+
+test("16.2.1: on React 18 the <img> gets no fetchPriority key at all (React 18 warns about it, even set to undefined)", () => {
+	const realVersion = React.version
+	const realCreateElement = React.createElement
+	const imgProps = []
+	React.version = "18.2.0"
+	React.createElement = function (type, props, ...children) {
+		if (type === "img") imgProps.push(props)
+		return realCreateElement.call(this, type, props, ...children)
+	}
+	try {
+		render({})
+		render({ priority: true })
+		render({ fetchPriority: "low" })
+	} finally {
+		React.version = realVersion
+		React.createElement = realCreateElement
+	}
+	assert.equal(imgProps.length, 3)
+	for (const props of imgProps) assert.ok(!("fetchPriority" in props), `camelCase fetchPriority key in ${JSON.stringify(Object.keys(props))}`)
+	assert.equal(imgProps[0].fetchpriority, undefined)
+	assert.equal(imgProps[1].fetchpriority, "high")
+	assert.equal(imgProps[2].fetchpriority, "low")
+})
+
+test("16.2.1: a #fragment stays at the end; the image API parameters go before it", () => {
+	const f = { ...image, url: "https://cdn.example.com/x/photo.jpg#v2" }
+	assert.equal(attr(renderToStaticMarkup(React.createElement(AgilityPic, { image: f, fallbackWidth: 800 })), "img", "src"), "https://cdn.example.com/x/photo.jpg?format=auto&w=800#v2")
+	const qf = { ...image, url: "https://cdn.example.com/x/photo.jpg?v=2#x" }
+	assert.equal(attr(renderToStaticMarkup(React.createElement(AgilityPic, { image: qf, fallbackWidth: 800 })), "img", "src"), "https://cdn.example.com/x/photo.jpg?v=2&format=auto&w=800#x")
+})
+
+test("16.2.1: quality alone leaves a GIF untouched (the API could return a still frame)", () => {
+	const gif = { ...image, url: "https://cdn.example.com/x/anim.gif" }
+	assert.equal(attr(renderToStaticMarkup(React.createElement(AgilityPic, { image: gif, quality: 80 })), "img", "src"), "https://cdn.example.com/x/anim.gif")
+	// with a width, a GIF goes through the API as it did in 16.2.0
+	assert.equal(attr(renderToStaticMarkup(React.createElement(AgilityPic, { image: gif, fallbackWidth: 400 })), "img", "src"), "https://cdn.example.com/x/anim.gif?format=auto&w=400")
 })
