@@ -1,7 +1,7 @@
 name: Next 16 compatibility
 
 # Builds a small Next app (test/fixtures/next16) against the packed package, on the oldest
-# Next 16 release, a middle minor and the latest, and checks the HTML it renders: AgilityPic
+# supported Next 16 release (16.0.10), a middle minor and the latest, and checks the HTML it renders: AgilityPic
 # (priority + widths/sizes, and 16.1.0-style sources), AgilityImage, ContentZone, renderHTML
 # and the @agility/nextjs/node entry point.
 on:
@@ -19,10 +19,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { next: "16.0.0", react: "19.2.0" } # oldest Next 16, with the React it shipped with
-          - { next: "16.0.0", react: "18.2.0" } # Pages Router on React 18, which Next 16 still allows
+          - { next: "16.0.10", react: "19.2.0" } # oldest supported Next 16 (first with all the Dec 2025 RSC fixes)
+          - { next: "16.0.10", react: "18.2.0" } # Pages Router on React 18, which Next 16 still allows
           - { next: "16.2", react: "19.2" } # a middle minor, latest patch
-          - { next: "latest", react: "latest" }
+          - { next: "16", react: "19" } # newest Next 16 and React 19 (not `latest`: Next 17 is outside the peer range)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -34,12 +34,11 @@ lets the browser pick the right width, and reserves the image's space. Existing 
   prop shapes.
 
 ### Changed
-- Supports every Next.js 16 release: the `next` peer dependency is `^16.0.0` (was `^16.0.10`), and `react`
-  and `react-dom` are declared as `^18.2.0 || ^19.0.0`, matching what Next 16 accepts. Nothing in the
-  package depends on a Next 16 minor. Verified by building a fixture app on Next 16.0.0 with React 19.2.0
-  and with React 18.2.0 (Pages Router), on Next 16.2.12 with React 19.2.9, and on Next 16.4.6 with
-  React 19.3.1; the new `next-compat` workflow runs that matrix on every pull request. Keep Next on a
-  patched release (16.0.7 and later fix CVE-2025-66478).
+- `react` and `react-dom` are declared as `^18.2.0 || ^19.0.0`, matching what Next 16 accepts. The `next`
+  peer dependency stays `^16.0.10`, the first 16.x with all the December 2025 RSC security fixes; nothing
+  in the package depends on a later Next 16 minor. The new `next-compat` workflow builds a fixture app on
+  every pull request on Next 16.0.10 with React 19.2.0 and with React 18.2.0 (Pages Router), on the latest
+  Next 16.2, and on the newest Next 16 with React 19.
 - On React 18, `AgilityPic` writes `fetchpriority` in lower case (React 18 doesn't know the camelCase
   prop) and skips the preload (`ReactDOM.preload()` is React 19).
 - `AgilityPic`'s `fallbackWidth` is capped at the original's width, as the `sources` already were
